@@ -4,6 +4,9 @@ import { useScrollReveal } from "@/hooks/useScrollReveal";
 
 const quickLinks = [
   { name: "Capabilities", path: "/capabilities" },
+  { name: "Solutions", path: "/solutions" },
+  { name: "Who We Serve", path: "/who-we-serve" },
+  { name: "Insights", path: "/insights" },
   { name: "About", path: "/about" },
   { name: "Contact", path: "/contact" },
 ];
