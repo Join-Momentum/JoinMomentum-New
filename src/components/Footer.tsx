@@ -2,13 +2,12 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
 
-const quickLinks = [
-  { name: "Capabilities", path: "/capabilities" },
-  { name: "Solutions", path: "/solutions" },
-  { name: "Who We Serve", path: "/who-we-serve" },
-  { name: "Insights", path: "/insights" },
-  { name: "About", path: "/about" },
-  { name: "Contact", path: "/contact" },
+const supportingLinks = [
+  { name: "Capability Statement", path: "/capability-statement" },
+  { name: "Security & Responsible Practice", path: "/security-responsible-practice" },
+  { name: "Responsible Use of AI", path: "/responsible-ai" },
+  { name: "Privacy Policy", path: "/privacy-policy" },
+  { name: "Terms of Use", path: "/terms-of-use" },
 ];
 
 const Footer = () => {
@@ -67,15 +66,15 @@ const Footer = () => {
               transition={{ delay: 0.4, duration: 0.6 }}
             >
               <h3 className="font-mono-accent text-xs uppercase tracking-[0.2em] text-muted-foreground mb-6">
-                Quick Links
+                Resources
               </h3>
               <nav className="space-y-3">
-                {quickLinks.map((link, index) => (
+                {supportingLinks.map((link, index) => (
                   <motion.div
                     key={link.path}
                     initial={{ opacity: 0, x: 20 }}
                     animate={isVisible ? { opacity: 1, x: 0 } : {}}
-                    transition={{ delay: 0.5 + index * 0.1, duration: 0.5 }}
+                    transition={{ delay: 0.5 + index * 0.08, duration: 0.5 }}
                   >
                     <Link
                       to={link.path}
@@ -99,13 +98,13 @@ const Footer = () => {
             <div className="w-5 h-5">
               <svg viewBox="0 0 32 32" className="w-full h-full">
                 <polygon
-                  points="16,2 28,9 28,23 16,30 4,23 4,9"
+                  points="16,2 28.12,9 28.12,23 16,30 3.88,23 3.88,9"
                   fill="none"
                   stroke="hsl(var(--accent))"
                   strokeWidth="1.5"
                 />
                 <polygon
-                  points="16,8 22,12 22,20 16,24 10,20 10,12"
+                  points="16,8 22.06,11.5 22.06,20.5 16,24 9.94,20.5 9.94,11.5"
                   fill="hsl(var(--accent))"
                 />
               </svg>

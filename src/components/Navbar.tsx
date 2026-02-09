@@ -8,8 +8,8 @@ const navLinks = [
   { name: "Capabilities", path: "/capabilities" },
   { name: "Solutions", path: "/solutions" },
   { name: "Who We Serve", path: "/who-we-serve" },
-  { name: "Insights", path: "/insights" },
   { name: "About", path: "/about" },
+  { name: "Insights", path: "/insights" },
   { name: "Contact", path: "/contact" },
 ];
 
@@ -42,20 +42,7 @@ const Navbar = () => {
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3 group">
             <div className="relative w-8 h-8">
-              <svg viewBox="0 0 32 32" className="w-full h-full">
-                <polygon
-                  points="16,2 28,9 28,23 16,30 4,23 4,9"
-                  fill="none"
-                  stroke="hsl(var(--accent))"
-                  strokeWidth="1.5"
-                  className="transition-all duration-300 group-hover:stroke-[2]"
-                />
-                <polygon
-                  points="16,8 22,12 22,20 16,24 10,20 10,12"
-                  fill="hsl(var(--accent))"
-                  className="transition-all duration-300 group-hover:opacity-80"
-                />
-              </svg>
+              <img src="/favicon.png" alt="Join Momentum's logo" />
             </div>
             <span className="font-heading font-bold text-sm md:text-base tracking-wide">
               JOIN MOMENTUM

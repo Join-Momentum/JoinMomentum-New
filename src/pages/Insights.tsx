@@ -9,28 +9,23 @@ import ScrollProgress from "@/components/ScrollProgress";
 const insightTopics = [
   {
     icon: Shield,
-    title: "Cyber Resilience & Infrastructure Defence",
-    description: "Approaches to protecting critical systems against evolving threats.",
+    title: "Cyber resilience and infrastructure defence",
   },
   {
     icon: Radio,
-    title: "Information Operations & Influence Risk",
-    description: "Understanding and countering information-based threats.",
+    title: "Information operations and influence risk",
   },
   {
     icon: Brain,
-    title: "Intelligence & Decision Advantage",
-    description: "Enhancing situational awareness and strategic decision-making.",
+    title: "Intelligence and decision advantage",
   },
   {
     icon: Cpu,
-    title: "Responsible Deployment of Emerging Technology",
-    description: "Integrating new capabilities with appropriate governance.",
+    title: "Responsible deployment of emerging technology",
   },
   {
     icon: Target,
-    title: "Capability Development in Complex Environments",
-    description: "Building institutional strength under challenging conditions.",
+    title: "Capability development in complex environments",
   },
 ];
 
@@ -44,22 +39,17 @@ const InsightCard = ({ topic, index }: { topic: typeof insightTopics[0]; index: 
       initial={{ opacity: 0, y: 30 }}
       animate={isVisible ? { opacity: 1, y: 0 } : {}}
       transition={{ delay: index * 0.1, duration: 0.5 }}
-      className="group flex items-start gap-6 p-6 md:p-8 border-b border-border hover:bg-card/50 transition-all duration-300 cursor-pointer"
+      className="group flex items-center gap-6 p-6 md:p-8 border-b border-border hover:bg-card/50 transition-all duration-300 cursor-pointer"
     >
       <div className="flex-shrink-0 w-12 h-12 flex items-center justify-center border border-accent/30 group-hover:border-accent group-hover:bg-accent/10 transition-all duration-300">
         <Icon className="w-5 h-5 text-accent" />
       </div>
       
-      <div className="flex-1 min-w-0">
-        <h3 className="font-heading font-bold text-lg md:text-xl mb-2 group-hover:text-accent transition-colors duration-300">
-          {topic.title}
-        </h3>
-        <p className="text-muted-foreground font-body">
-          {topic.description}
-        </p>
-      </div>
+      <h3 className="font-heading font-semibold text-lg md:text-xl group-hover:text-accent transition-colors duration-300 flex-1">
+        {topic.title}
+      </h3>
       
-      <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-accent group-hover:translate-x-1 transition-all duration-300 flex-shrink-0 mt-1" />
+      <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-accent group-hover:translate-x-1 transition-all duration-300 flex-shrink-0" />
     </motion.div>
   );
 };
@@ -100,7 +90,7 @@ const Insights = () => {
             animate={heroVisible ? { opacity: 1, y: 0 } : {}}
             transition={{ delay: 0.4, duration: 0.6 }}
           >
-            We publish selected insights for practitioners and decision-makers across defence, security, and national resilience.
+            We publish selected insights for practitioners and decision-makers, including:
           </motion.p>
 
           <motion.div
