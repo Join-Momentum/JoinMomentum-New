@@ -1,19 +1,21 @@
 import ScrollProgress from "@/components/ScrollProgress";
+import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/sections/HeroSection";
 import WhoWeAre from "@/components/sections/WhoWeAre";
-import Capabilities from "@/components/sections/Capabilities";
+import CapabilitiesSection from "@/components/sections/Capabilities";
 import ProcessTimeline from "@/components/sections/ProcessTimeline";
-import ContactFooter from "@/components/sections/ContactFooter";
+import Footer from "@/components/Footer";
 
 const Index = () => {
   return (
     <main className="bg-background text-foreground">
       <ScrollProgress />
+      <Navbar />
       <HeroSection />
       <WhoWeAre />
-      <Capabilities />
+      <CapabilitiesSection />
       <ProcessTimeline />
-      <ContactFooter />
+      <Footer />
     </main>
   );
 };
