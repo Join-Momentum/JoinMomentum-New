@@ -60,9 +60,9 @@ const HeroSection = () => {
           animate={{ opacity: 1 }}
           transition={{ delay: 1.6, duration: 0.6 }}
         >
-          <a href="#who-we-are" aria-label="Scroll down">
+          {/* <a href="#who-we-are" aria-label="Scroll down">
             <ArrowDown className="w-5 h-5 text-muted-foreground animate-bounce" />
-          </a>
+          </a> */}
         </motion.div>
       </div>
     </section>

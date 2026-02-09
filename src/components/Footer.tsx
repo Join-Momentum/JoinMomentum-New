@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
 
 const supportingLinks = [
-  { name: "Capability Statement", path: "/capability-statement" },
+  { name: "Capability Statement", path: "/capabilities" },
   { name: "Security & Responsible Practice", path: "/security-responsible-practice" },
   { name: "Responsible Use of AI", path: "/responsible-ai" },
   { name: "Privacy Policy", path: "/privacy-policy" },
@@ -96,18 +96,7 @@ const Footer = () => {
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
             <div className="w-5 h-5">
-              <svg viewBox="0 0 32 32" className="w-full h-full">
-                <polygon
-                  points="16,2 28.12,9 28.12,23 16,30 3.88,23 3.88,9"
-                  fill="none"
-                  stroke="hsl(var(--accent))"
-                  strokeWidth="1.5"
-                />
-                <polygon
-                  points="16,8 22.06,11.5 22.06,20.5 16,24 9.94,20.5 9.94,11.5"
-                  fill="hsl(var(--accent))"
-                />
-              </svg>
+              <img src="/favicon.png" alt="Join Momentum's logo" />
             </div>
             <span className="font-heading font-bold text-xs tracking-wide">JOIN MOMENTUM</span>
           </Link>
