@@ -1,73 +1,58 @@
-# Welcome to your Lovable project
+# Join Momentum Inc
 
-## Project info
+**Defence & Security Capability for Complex Environments**
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+## About
 
-## How can I edit this code?
+Join Momentum Inc partners with defence and security stakeholders to strengthen operational readiness, protect critical systems, and maintain strategic advantage across evolving threat landscapes.
 
-There are several ways of editing your application.
+We support organisations responsible for national security, public safety, and critical infrastructure by helping them move from analysis to action—designing and supporting capabilities that can be sustained by the people who operate them.
 
-**Use Lovable**
+## Core Capability Areas
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+- **Strategic Communications & Information Operations** – Designing and executing communications strategies that shape narratives, counter disinformation, and support operational objectives in contested information environments.
 
-Changes made via Lovable will be committed automatically to this repo.
+- **Cyber Security & Critical Infrastructure Defence** – Protecting essential systems and networks through threat assessment, security architecture, incident response planning, and resilience frameworks for critical national infrastructure.
 
-**Use your preferred IDE**
+- **Military Intelligence & Operational Advantage** – Enhancing intelligence collection, analysis, and dissemination capabilities to provide decision advantage and support mission success across operational domains.
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+- **Emerging Technology & Artificial Intelligence in Defence** – Integrating AI, autonomous systems, and emerging technologies into defence and security operations with appropriate governance, ethics, and human oversight.
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## Our Approach
 
-Follow these steps:
+Our work is shaped by:
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+- **Operational Realities** – Not abstract models
+- **Governance & Assurance** – Accountability requirements
+- **Local Context** – Sovereignty and institutional maturity
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
+## Tech Stack
 
 This project is built with:
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+- [Vite](https://vitejs.dev/) – Fast build tool and dev server
+- [React](https://react.dev/) – UI library
+- [TypeScript](https://www.typescriptlang.org/) – Type-safe JavaScript
+- [Tailwind CSS](https://tailwindcss.com/) – Utility-first CSS framework
+- [shadcn/ui](https://ui.shadcn.com/) – Reusable component library
+- [Framer Motion](https://www.framer.com/motion/) – Animation library
 
-## How can I deploy this project?
+## Getting Started
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+```sh
+# Clone the repository
+git clone <YOUR_GIT_URL>
 
-## Can I connect a custom domain to my Lovable project?
+# Navigate to the project directory
+cd JoinMomentum-New
 
-Yes, you can!
+# Install dependencies
+npm install
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+# Start the development server
+npm run dev
+```
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+## License
+
+All rights reserved © Join Momentum Inc
