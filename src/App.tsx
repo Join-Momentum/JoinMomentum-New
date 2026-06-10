@@ -28,6 +28,7 @@ import SolutionCapabilityAssessment from "./pages/SolutionCapabilityAssessment";
 import SolutionTrainingExercises from "./pages/SolutionTrainingExercises";
 import SolutionOperationalAdvisory from "./pages/SolutionOperationalAdvisory";
 import SolutionServiceDeployment from "./pages/SolutionServiceDeployment";
+import InsightArticle from "./pages/InsightArticle";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -47,6 +48,7 @@ const App = () => (
           <Route path="/who-we-serve" element={<WhoWeServe />} />
           <Route path="/about" element={<About />} />
           <Route path="/insights" element={<Insights />} />
+          <Route path="/insights/:slug" element={<InsightArticle />} />
           <Route path="/contact" element={<Contact />} />
 
           {/* Capability subpages */}

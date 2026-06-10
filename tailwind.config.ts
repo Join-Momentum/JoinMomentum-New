@@ -17,6 +17,7 @@ export default {
         heading: ["Space Grotesk", "sans-serif"],
         body: ["IBM Plex Sans", "sans-serif"],
         mono: ["JetBrains Mono", "monospace"],
+        article: ["Lora", "Georgia", "serif"],
       },
       colors: {
         border: "hsl(var(--border))",
