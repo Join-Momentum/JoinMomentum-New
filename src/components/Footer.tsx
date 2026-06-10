@@ -155,7 +155,7 @@ const Footer = () => {
           </div>
 
           <span className="font-mono-accent text-xs text-muted-foreground text-center sm:text-right">
-            Jurisdiction to confirm — counsel review pending.
+            Delivering resilient defence and security solutions worldwide.
           </span>
         </div>
       </div>
