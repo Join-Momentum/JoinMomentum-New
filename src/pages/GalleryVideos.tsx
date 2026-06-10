@@ -18,7 +18,7 @@ type VideoItem = {
   caption: string;
   duration: string;
   thumbnailUrl: string;
-  embedUrl: string;
+  videoUrl: string;
   capability: "strategic-comms" | "cyber-security" | "military-intel" | "emerging-tech";
   engagementType: "advisory" | "training" | "exercise" | "deployment";
   segment: "government" | "intelligence" | "cni" | "international";
@@ -26,6 +26,7 @@ type VideoItem = {
   window: string;
 };
 
+// Direct Pexels CDN MP4 — free to use, no authentication required
 const videos: VideoItem[] = [
   {
     id: "vid-001",
@@ -34,7 +35,7 @@ const videos: VideoItem[] = [
       "Overview footage from a cross-functional cyber exercise — critical infrastructure cohort. Screens and sensitive content obscured.",
     duration: "4:12",
     thumbnailUrl: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=800&h=450&fit=crop&q=80",
-    embedUrl: "https://www.pexels.com/video/3209828/embed/",
+    videoUrl: "https://videos.pexels.com/video-files/3209828/3209828-hd_1920_1080_25fps.mp4",
     capability: "cyber-security",
     engagementType: "exercise",
     segment: "cni",
@@ -48,7 +49,7 @@ const videos: VideoItem[] = [
       "Briefing-style summary from a strategic communications capacity development programme. No participant identifiers included.",
     duration: "6:48",
     thumbnailUrl: "https://images.unsplash.com/photo-1475721027785-f74eccf877e2?w=800&h=450&fit=crop&q=80",
-    embedUrl: "https://www.pexels.com/video/3255447/embed/",
+    videoUrl: "https://videos.pexels.com/video-files/3255447/3255447-hd_1920_1080_25fps.mp4",
     capability: "strategic-comms",
     engagementType: "training",
     segment: "government",
@@ -62,7 +63,7 @@ const videos: VideoItem[] = [
       "Selected workshop content from an intelligence operations capacity development engagement.",
     duration: "3:30",
     thumbnailUrl: "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800&h=450&fit=crop&q=80",
-    embedUrl: "https://www.pexels.com/video/3253658/embed/",
+    videoUrl: "https://videos.pexels.com/video-files/3253658/3253658-hd_1920_1080_25fps.mp4",
     capability: "military-intel",
     engagementType: "training",
     segment: "intelligence",
@@ -316,14 +317,15 @@ const GalleryVideos = () => {
           </DialogTitle>
           {activeVideo && (
             <>
-              {/* Embedded player */}
+              {/* Video player */}
               <div className="relative aspect-video w-full bg-black border-b border-border overflow-hidden">
-                <iframe
-                  src={activeVideo.embedUrl}
-                  title={activeVideo.title}
-                  className="absolute inset-0 w-full h-full"
-                  allow="autoplay; fullscreen; picture-in-picture"
-                  allowFullScreen
+                <video
+                  key={activeVideo.id}
+                  src={activeVideo.videoUrl}
+                  poster={activeVideo.thumbnailUrl}
+                  controls
+                  autoPlay
+                  className="absolute inset-0 w-full h-full object-contain"
                 />
               </div>
               {/* Info */}
