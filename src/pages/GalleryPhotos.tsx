@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
-import { X, Camera, Video } from "lucide-react";
+import { Camera, Video } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ScrollProgress from "@/components/ScrollProgress";
@@ -15,6 +15,7 @@ import {
 type GalleryItem = {
   id: string;
   caption: string;
+  imageUrl: string;
   capability: "strategic-comms" | "cyber-security" | "military-intel" | "emerging-tech";
   engagementType: "advisory" | "training" | "exercise" | "deployment";
   segment: "government" | "intelligence" | "cni" | "international";
@@ -26,6 +27,7 @@ const photos: GalleryItem[] = [
   {
     id: "ph-001",
     caption: "Cyber simulation — critical infrastructure cohort, Q1 2026",
+    imageUrl: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=800&h=600&fit=crop&q=80",
     capability: "cyber-security",
     engagementType: "exercise",
     segment: "cni",
@@ -35,6 +37,7 @@ const photos: GalleryItem[] = [
   {
     id: "ph-002",
     caption: "Strategic communications workshop — government cohort, Q4 2025",
+    imageUrl: "https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=800&h=600&fit=crop&q=80",
     capability: "strategic-comms",
     engagementType: "training",
     segment: "government",
@@ -44,6 +47,7 @@ const photos: GalleryItem[] = [
   {
     id: "ph-003",
     caption: "Intelligence operations capacity development — Q3 2025",
+    imageUrl: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&h=600&fit=crop&q=80",
     capability: "military-intel",
     engagementType: "training",
     segment: "intelligence",
@@ -53,6 +57,7 @@ const photos: GalleryItem[] = [
   {
     id: "ph-004",
     caption: "Operational advisory engagement — planning cycle support, Q2 2025",
+    imageUrl: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800&h=600&fit=crop&q=80",
     capability: "military-intel",
     engagementType: "advisory",
     segment: "government",
@@ -62,6 +67,7 @@ const photos: GalleryItem[] = [
   {
     id: "ph-005",
     caption: "Emerging technology integration workshop — AI governance, Q1 2025",
+    imageUrl: "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=800&h=600&fit=crop&q=80",
     capability: "emerging-tech",
     engagementType: "training",
     segment: "international",
@@ -71,6 +77,7 @@ const photos: GalleryItem[] = [
   {
     id: "ph-006",
     caption: "Tabletop exercise — cross-functional crisis simulation, Q4 2024",
+    imageUrl: "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=800&h=600&fit=crop&q=80",
     capability: "cyber-security",
     engagementType: "exercise",
     segment: "government",
@@ -80,6 +87,7 @@ const photos: GalleryItem[] = [
   {
     id: "ph-007",
     caption: "Capability assessment — CNI operator, Q3 2024",
+    imageUrl: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800&h=600&fit=crop&q=80",
     capability: "cyber-security",
     engagementType: "advisory",
     segment: "cni",
@@ -89,6 +97,7 @@ const photos: GalleryItem[] = [
   {
     id: "ph-008",
     caption: "Service deployment — security programme stand-up, Q2 2024",
+    imageUrl: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&h=600&fit=crop&q=80",
     capability: "strategic-comms",
     engagementType: "deployment",
     segment: "international",
@@ -139,16 +148,14 @@ const FilterPill = ({
   </button>
 );
 
-const PlaceholderPhoto = ({ item }: { item: GalleryItem }) => (
-  <div className="relative w-full h-full bg-card border border-border">
-    <div className="absolute inset-0 bg-gradient-to-br from-secondary/90 via-background/80 to-secondary/60" />
-    <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 p-4 text-center">
-      <Camera className="w-8 h-8 text-border" />
-      <span className="font-mono-accent text-[9px] uppercase tracking-wider text-border/50">
-        {item.id}
-      </span>
-    </div>
-  </div>
+const GalleryImage = ({ item, sizes = "800px" }: { item: GalleryItem; sizes?: string }) => (
+  <img
+    src={item.imageUrl}
+    alt={item.caption}
+    className="w-full h-full object-cover"
+    loading="lazy"
+    sizes={sizes}
+  />
 );
 
 const GalleryPhotos = () => {
@@ -289,7 +296,7 @@ const GalleryPhotos = () => {
                   >
                     {/* Image area */}
                     <div className="relative aspect-[4/3] overflow-hidden border border-border group-hover:border-accent transition-colors duration-300">
-                      <PlaceholderPhoto item={item} />
+                      <GalleryImage item={item} sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw" />
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
                       {/* Engagement type badge */}
                       <div className="absolute top-3 left-3">
@@ -338,8 +345,8 @@ const GalleryPhotos = () => {
           {lightboxItem && (
             <>
               {/* Image */}
-              <div className="relative aspect-[16/10] w-full">
-                <PlaceholderPhoto item={lightboxItem} />
+              <div className="relative aspect-[16/10] w-full overflow-hidden">
+                <GalleryImage item={lightboxItem} sizes="768px" />
               </div>
               {/* Caption bar */}
               <div className="px-6 py-5 border-t border-border">

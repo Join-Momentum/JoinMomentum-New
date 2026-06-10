@@ -17,6 +17,8 @@ type VideoItem = {
   title: string;
   caption: string;
   duration: string;
+  thumbnailUrl: string;
+  embedUrl: string;
   capability: "strategic-comms" | "cyber-security" | "military-intel" | "emerging-tech";
   engagementType: "advisory" | "training" | "exercise" | "deployment";
   segment: "government" | "intelligence" | "cni" | "international";
@@ -31,6 +33,8 @@ const videos: VideoItem[] = [
     caption:
       "Overview footage from a cross-functional cyber exercise — critical infrastructure cohort. Screens and sensitive content obscured.",
     duration: "4:12",
+    thumbnailUrl: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=800&h=450&fit=crop&q=80",
+    embedUrl: "https://www.pexels.com/video/3209828/embed/",
     capability: "cyber-security",
     engagementType: "exercise",
     segment: "cni",
@@ -43,6 +47,8 @@ const videos: VideoItem[] = [
     caption:
       "Briefing-style summary from a strategic communications capacity development programme. No participant identifiers included.",
     duration: "6:48",
+    thumbnailUrl: "https://images.unsplash.com/photo-1475721027785-f74eccf877e2?w=800&h=450&fit=crop&q=80",
+    embedUrl: "https://www.pexels.com/video/3255447/embed/",
     capability: "strategic-comms",
     engagementType: "training",
     segment: "government",
@@ -55,6 +61,8 @@ const videos: VideoItem[] = [
     caption:
       "Selected workshop content from an intelligence operations capacity development engagement.",
     duration: "3:30",
+    thumbnailUrl: "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800&h=450&fit=crop&q=80",
+    embedUrl: "https://www.pexels.com/video/3253658/embed/",
     capability: "military-intel",
     engagementType: "training",
     segment: "intelligence",
@@ -98,20 +106,25 @@ const FilterPill = ({
   </button>
 );
 
-const PlaceholderThumbnail = ({ item }: { item: VideoItem }) => (
-  <div className="relative w-full h-full bg-card">
-    <div className="absolute inset-0 bg-gradient-to-br from-secondary/90 via-background/70 to-secondary/60" />
-    <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-      <div className="w-14 h-14 rounded-full border border-accent/40 bg-accent/5 flex items-center justify-center group-hover:bg-accent/20 group-hover:border-accent transition-all duration-300">
-        <Play className="w-6 h-6 text-accent fill-accent" />
+const VideoThumbnail = ({ item }: { item: VideoItem }) => (
+  <div className="relative w-full h-full">
+    <img
+      src={item.thumbnailUrl}
+      alt={item.title}
+      className="w-full h-full object-cover"
+      loading="lazy"
+    />
+    {/* Dark overlay */}
+    <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-colors duration-300" />
+    {/* Play button */}
+    <div className="absolute inset-0 flex items-center justify-center">
+      <div className="w-14 h-14 rounded-full border border-white/40 bg-black/30 flex items-center justify-center group-hover:bg-accent/80 group-hover:border-accent transition-all duration-300">
+        <Play className="w-6 h-6 text-white fill-white ml-0.5" />
       </div>
-      <span className="font-mono-accent text-[9px] uppercase tracking-wider text-border/50">
-        {item.id}
-      </span>
     </div>
     {/* Duration badge */}
     <div className="absolute bottom-3 right-3">
-      <span className="font-mono-accent text-[10px] bg-background/90 text-muted-foreground border border-border px-2 py-0.5">
+      <span className="font-mono-accent text-[10px] bg-black/70 text-white border border-white/20 px-2 py-0.5">
         {item.duration}
       </span>
     </div>
@@ -252,7 +265,7 @@ const GalleryVideos = () => {
                   >
                     {/* Thumbnail */}
                     <div className="relative aspect-video overflow-hidden border border-border group-hover:border-accent transition-colors duration-300">
-                      <PlaceholderThumbnail item={item} />
+                      <VideoThumbnail item={item} />
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
                       {/* Type badge */}
                       <div className="absolute top-3 left-3">
@@ -303,9 +316,15 @@ const GalleryVideos = () => {
           </DialogTitle>
           {activeVideo && (
             <>
-              {/* Player placeholder */}
-              <div className="relative aspect-video w-full bg-card border-b border-border">
-                <PlaceholderThumbnail item={activeVideo} />
+              {/* Embedded player */}
+              <div className="relative aspect-video w-full bg-black border-b border-border overflow-hidden">
+                <iframe
+                  src={activeVideo.embedUrl}
+                  title={activeVideo.title}
+                  className="absolute inset-0 w-full h-full"
+                  allow="autoplay; fullscreen; picture-in-picture"
+                  allowFullScreen
+                />
               </div>
               {/* Info */}
               <div className="px-6 py-5">
