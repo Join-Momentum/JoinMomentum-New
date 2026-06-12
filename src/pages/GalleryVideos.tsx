@@ -11,75 +11,16 @@ import {
   DialogContent,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useGalleryVideos, type GalleryVideo } from "@/hooks/useGalleryVideos";
 
-type VideoItem = {
-  id: string;
-  title: string;
-  caption: string;
-  duration: string;
-  thumbnailUrl: string;
-  videoUrl: string;
-  capability: "strategic-comms" | "cyber-security" | "military-intel" | "emerging-tech";
-  engagementType: "advisory" | "training" | "exercise" | "deployment";
-  segment: "government" | "intelligence" | "cni" | "international";
-  region: string;
-  window: string;
-};
-
-// Direct Pexels CDN MP4 — free to use, no authentication required
-const videos: VideoItem[] = [
-  {
-    id: "vid-001",
-    title: "Cyber Simulation Exercise Overview",
-    caption:
-      "Overview footage from a cross-functional cyber exercise — critical infrastructure cohort. Screens and sensitive content obscured.",
-    duration: "4:12",
-    thumbnailUrl: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=800&h=450&fit=crop&q=80",
-    videoUrl: "https://videos.pexels.com/video-files/3209828/3209828-hd_1920_1080_25fps.mp4",
-    capability: "cyber-security",
-    engagementType: "exercise",
-    segment: "cni",
-    region: "West Africa",
-    window: "Q1 2026",
-  },
-  {
-    id: "vid-002",
-    title: "Capacity Development Programme — Briefing",
-    caption:
-      "Briefing-style summary from a strategic communications capacity development programme. No participant identifiers included.",
-    duration: "6:48",
-    thumbnailUrl: "https://images.unsplash.com/photo-1475721027785-f74eccf877e2?w=800&h=450&fit=crop&q=80",
-    videoUrl: "https://videos.pexels.com/video-files/3255447/3255447-hd_1920_1080_25fps.mp4",
-    capability: "strategic-comms",
-    engagementType: "training",
-    segment: "government",
-    region: "East Africa",
-    window: "Q3 2025",
-  },
-  {
-    id: "vid-003",
-    title: "Intelligence Operations — Workshop Highlights",
-    caption:
-      "Selected workshop content from an intelligence operations capacity development engagement.",
-    duration: "3:30",
-    thumbnailUrl: "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800&h=450&fit=crop&q=80",
-    videoUrl: "https://videos.pexels.com/video-files/3253658/3253658-hd_1920_1080_25fps.mp4",
-    capability: "military-intel",
-    engagementType: "training",
-    segment: "intelligence",
-    region: "Southern Africa",
-    window: "Q4 2024",
-  },
-];
-
-const capabilityLabels: Record<VideoItem["capability"], string> = {
+const capabilityLabels: Record<string, string> = {
   "strategic-comms": "Strategic Comms",
   "cyber-security": "Cyber Security",
   "military-intel": "Military Intelligence",
   "emerging-tech": "Emerging Tech",
 };
 
-const engagementLabels: Record<VideoItem["engagementType"], string> = {
+const engagementLabels: Record<string, string> = {
   advisory: "Advisory",
   training: "Training",
   exercise: "Exercise",
@@ -107,7 +48,7 @@ const FilterPill = ({
   </button>
 );
 
-const VideoThumbnail = ({ item }: { item: VideoItem }) => (
+const VideoThumbnail = ({ item }: { item: GalleryVideo }) => (
   <div className="relative w-full h-full">
     <img
       src={item.thumbnailUrl}
@@ -115,15 +56,12 @@ const VideoThumbnail = ({ item }: { item: VideoItem }) => (
       className="w-full h-full object-cover"
       loading="lazy"
     />
-    {/* Dark overlay */}
     <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-colors duration-300" />
-    {/* Play button */}
     <div className="absolute inset-0 flex items-center justify-center">
       <div className="w-14 h-14 rounded-full border border-white/40 bg-black/30 flex items-center justify-center group-hover:bg-accent/80 group-hover:border-accent transition-all duration-300">
         <Play className="w-6 h-6 text-white fill-white ml-0.5" />
       </div>
     </div>
-    {/* Duration badge */}
     <div className="absolute bottom-3 right-3">
       <span className="font-mono-accent text-[10px] bg-black/70 text-white border border-white/20 px-2 py-0.5">
         {item.duration}
@@ -132,11 +70,24 @@ const VideoThumbnail = ({ item }: { item: VideoItem }) => (
   </div>
 );
 
+const VideoSkeleton = () => (
+  <div className="animate-pulse">
+    <div className="aspect-video bg-secondary/40 border border-border" />
+    <div className="pt-3 space-y-2">
+      <div className="h-3.5 bg-secondary/40 rounded w-2/3" />
+      <div className="h-3 bg-secondary/25 rounded w-full" />
+      <div className="h-2.5 bg-secondary/25 rounded w-1/2" />
+    </div>
+  </div>
+);
+
 const GalleryVideos = () => {
   const { ref: heroRef, isVisible: heroVisible } = useScrollReveal(0.1);
-  const [capFilter, setCapFilter] = useState<VideoItem["capability"] | "all">("all");
-  const [engFilter, setEngFilter] = useState<VideoItem["engagementType"] | "all">("all");
-  const [activeVideo, setActiveVideo] = useState<VideoItem | null>(null);
+  const [capFilter, setCapFilter] = useState("all");
+  const [engFilter, setEngFilter] = useState("all");
+  const [activeVideo, setActiveVideo] = useState<GalleryVideo | null>(null);
+
+  const { status, videos } = useGalleryVideos();
 
   const filtered = useMemo(
     () =>
@@ -145,7 +96,7 @@ const GalleryVideos = () => {
           (capFilter === "all" || v.capability === capFilter) &&
           (engFilter === "all" || v.engagementType === engFilter)
       ),
-    [capFilter, engFilter]
+    [videos, capFilter, engFilter]
   );
 
   return (
@@ -212,7 +163,7 @@ const GalleryVideos = () => {
               Capability:
             </span>
             <FilterPill label="All" active={capFilter === "all"} onClick={() => setCapFilter("all")} />
-            {(Object.keys(capabilityLabels) as VideoItem["capability"][]).map((k) => (
+            {Object.keys(capabilityLabels).map((k) => (
               <FilterPill
                 key={k}
                 label={capabilityLabels[k]}
@@ -227,7 +178,7 @@ const GalleryVideos = () => {
               Type:
             </span>
             <FilterPill label="All" active={engFilter === "all"} onClick={() => setEngFilter("all")} />
-            {(Object.keys(engagementLabels) as VideoItem["engagementType"][]).map((k) => (
+            {Object.keys(engagementLabels).map((k) => (
               <FilterPill
                 key={k}
                 label={engagementLabels[k]}
@@ -242,74 +193,102 @@ const GalleryVideos = () => {
       {/* Grid */}
       <section className="py-12 md:py-16 px-6 md:px-12">
         <div className="max-w-[1400px] mx-auto">
-          <p className="font-mono-accent text-xs text-muted-foreground mb-8 uppercase tracking-wider">
-            {filtered.length} {filtered.length === 1 ? "item" : "items"}
-          </p>
 
-          <AnimatePresence mode="popLayout">
-            {filtered.length > 0 ? (
-              <motion.div
-                key="grid"
-                layout
-                className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6"
-              >
-                {filtered.map((item, i) => (
+          {/* Loading */}
+          {status === "loading" && (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <VideoSkeleton key={i} />
+              ))}
+            </div>
+          )}
+
+          {/* Error */}
+          {status === "error" && (
+            <div className="py-24 text-center">
+              <Video className="w-8 h-8 text-border mx-auto mb-4" />
+              <p className="font-mono-accent text-sm text-muted-foreground">
+                Failed to load gallery. Please try again later.
+              </p>
+            </div>
+          )}
+
+          {/* Loaded */}
+          {status === "idle" && (
+            <>
+              <p className="font-mono-accent text-xs text-muted-foreground mb-8 uppercase tracking-wider">
+                {filtered.length} {filtered.length === 1 ? "item" : "items"}
+              </p>
+
+              <AnimatePresence mode="popLayout">
+                {filtered.length > 0 ? (
                   <motion.div
-                    key={item.id}
+                    key="grid"
                     layout
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    transition={{ delay: i * 0.06, duration: 0.4 }}
-                    className="group cursor-pointer"
-                    onClick={() => setActiveVideo(item)}
+                    className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6"
                   >
-                    {/* Thumbnail */}
-                    <div className="relative aspect-video overflow-hidden border border-border group-hover:border-accent transition-colors duration-300">
-                      <VideoThumbnail item={item} />
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
-                      {/* Type badge */}
-                      <div className="absolute top-3 left-3">
-                        <span className="font-mono-accent text-[9px] uppercase tracking-wider px-2 py-0.5 bg-background/90 text-accent border border-accent/30">
-                          {engagementLabels[item.engagementType]}
-                        </span>
-                      </div>
-                    </div>
+                    {filtered.map((item, i) => (
+                      <motion.div
+                        key={item.id}
+                        layout
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        transition={{ delay: i * 0.06, duration: 0.4 }}
+                        className="group cursor-pointer"
+                        onClick={() => setActiveVideo(item)}
+                      >
+                        <div className="relative aspect-video overflow-hidden border border-border group-hover:border-accent transition-colors duration-300">
+                          <VideoThumbnail item={item} />
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
+                          {item.engagementType && (
+                            <div className="absolute top-3 left-3">
+                              <span className="font-mono-accent text-[9px] uppercase tracking-wider px-2 py-0.5 bg-background/90 text-accent border border-accent/30">
+                                {engagementLabels[item.engagementType] ?? item.engagementType}
+                              </span>
+                            </div>
+                          )}
+                        </div>
 
-                    {/* Info */}
-                    <div className="pt-3">
-                      <h3 className="font-heading font-semibold text-sm mb-1 group-hover:text-accent transition-colors duration-300 line-clamp-1">
-                        {item.title}
-                      </h3>
-                      <p className="font-body text-xs text-muted-foreground leading-snug line-clamp-2">
-                        {item.caption}
-                      </p>
-                      <p className="font-mono-accent text-[10px] text-muted-foreground/50 mt-1.5">
-                        {item.region} · {item.window}
-                      </p>
-                    </div>
+                        <div className="pt-3">
+                          <h3 className="font-heading font-semibold text-sm mb-1 group-hover:text-accent transition-colors duration-300 line-clamp-1">
+                            {item.title}
+                          </h3>
+                          {item.caption && (
+                            <p className="font-body text-xs text-muted-foreground leading-snug line-clamp-2">
+                              {item.caption}
+                            </p>
+                          )}
+                          {(item.region || item.window) && (
+                            <p className="font-mono-accent text-[10px] text-muted-foreground/50 mt-1.5">
+                              {[item.region, item.window].filter(Boolean).join(" · ")}
+                            </p>
+                          )}
+                        </div>
+                      </motion.div>
+                    ))}
                   </motion.div>
-                ))}
-              </motion.div>
-            ) : (
-              <motion.div
-                key="empty"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="py-24 text-center"
-              >
-                <Video className="w-8 h-8 text-border mx-auto mb-4" />
-                <p className="font-mono-accent text-sm text-muted-foreground">
-                  No items match the selected filters.
-                </p>
-              </motion.div>
-            )}
-          </AnimatePresence>
+                ) : (
+                  <motion.div
+                    key="empty"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="py-24 text-center"
+                  >
+                    <Video className="w-8 h-8 text-border mx-auto mb-4" />
+                    <p className="font-mono-accent text-sm text-muted-foreground">
+                      No items match the selected filters.
+                    </p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </>
+          )}
         </div>
       </section>
 
-      {/* Video modal */}
+      {/* Video modal — Vimeo iframe */}
       <Dialog open={!!activeVideo} onOpenChange={(open) => !open && setActiveVideo(null)}>
         <DialogContent className="max-w-3xl bg-background border-border p-0 gap-0">
           <DialogTitle className="sr-only">
@@ -317,33 +296,39 @@ const GalleryVideos = () => {
           </DialogTitle>
           {activeVideo && (
             <>
-              {/* Video player */}
               <div className="relative aspect-video w-full bg-black border-b border-border overflow-hidden">
-                <video
+                <iframe
                   key={activeVideo.id}
                   src={activeVideo.videoUrl}
-                  poster={activeVideo.thumbnailUrl}
-                  controls
-                  autoPlay
-                  className="absolute inset-0 w-full h-full object-contain"
+                  allow="autoplay; fullscreen; picture-in-picture"
+                  allowFullScreen
+                  className="absolute inset-0 w-full h-full"
+                  style={{ border: 0 }}
                 />
               </div>
-              {/* Info */}
               <div className="px-6 py-5">
                 <h2 className="font-heading font-bold text-lg mb-1">{activeVideo.title}</h2>
-                <p className="font-body text-sm text-muted-foreground leading-relaxed mb-4">
-                  {activeVideo.caption}
-                </p>
+                {activeVideo.caption && (
+                  <p className="font-body text-sm text-muted-foreground leading-relaxed mb-4">
+                    {activeVideo.caption}
+                  </p>
+                )}
                 <div className="flex flex-wrap gap-2">
-                  <span className="font-mono-accent text-[10px] uppercase tracking-wider text-accent border border-accent/30 px-2 py-0.5">
-                    {engagementLabels[activeVideo.engagementType]}
-                  </span>
-                  <span className="font-mono-accent text-[10px] uppercase tracking-wider text-muted-foreground border border-border px-2 py-0.5">
-                    {capabilityLabels[activeVideo.capability]}
-                  </span>
-                  <span className="font-mono-accent text-[10px] uppercase tracking-wider text-muted-foreground border border-border px-2 py-0.5">
-                    {activeVideo.region} · {activeVideo.window}
-                  </span>
+                  {activeVideo.engagementType && (
+                    <span className="font-mono-accent text-[10px] uppercase tracking-wider text-accent border border-accent/30 px-2 py-0.5">
+                      {engagementLabels[activeVideo.engagementType] ?? activeVideo.engagementType}
+                    </span>
+                  )}
+                  {activeVideo.capability && (
+                    <span className="font-mono-accent text-[10px] uppercase tracking-wider text-muted-foreground border border-border px-2 py-0.5">
+                      {capabilityLabels[activeVideo.capability] ?? activeVideo.capability}
+                    </span>
+                  )}
+                  {(activeVideo.region || activeVideo.window) && (
+                    <span className="font-mono-accent text-[10px] uppercase tracking-wider text-muted-foreground border border-border px-2 py-0.5">
+                      {[activeVideo.region, activeVideo.window].filter(Boolean).join(" · ")}
+                    </span>
+                  )}
                 </div>
               </div>
             </>

@@ -11,116 +11,23 @@ import {
   DialogContent,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useGalleryPhotos, type Photo } from "@/hooks/useGalleryPhotos";
 
-type GalleryItem = {
-  id: string;
-  caption: string;
-  imageUrl: string;
-  capability: "strategic-comms" | "cyber-security" | "military-intel" | "emerging-tech";
-  engagementType: "advisory" | "training" | "exercise" | "deployment";
-  segment: "government" | "intelligence" | "cni" | "international";
-  region: string;
-  window: string;
-};
-
-const photos: GalleryItem[] = [
-  {
-    id: "ph-001",
-    caption: "Cyber simulation — critical infrastructure cohort, Q1 2026",
-    imageUrl: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=800&h=600&fit=crop&q=80",
-    capability: "cyber-security",
-    engagementType: "exercise",
-    segment: "cni",
-    region: "West Africa",
-    window: "Q1 2026",
-  },
-  {
-    id: "ph-002",
-    caption: "Strategic communications workshop — government cohort, Q4 2025",
-    imageUrl: "https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=800&h=600&fit=crop&q=80",
-    capability: "strategic-comms",
-    engagementType: "training",
-    segment: "government",
-    region: "East Africa",
-    window: "Q4 2025",
-  },
-  {
-    id: "ph-003",
-    caption: "Intelligence operations capacity development — Q3 2025",
-    imageUrl: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&h=600&fit=crop&q=80",
-    capability: "military-intel",
-    engagementType: "training",
-    segment: "intelligence",
-    region: "Southern Africa",
-    window: "Q3 2025",
-  },
-  {
-    id: "ph-004",
-    caption: "Operational advisory engagement — planning cycle support, Q2 2025",
-    imageUrl: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800&h=600&fit=crop&q=80",
-    capability: "military-intel",
-    engagementType: "advisory",
-    segment: "government",
-    region: "West Africa",
-    window: "Q2 2025",
-  },
-  {
-    id: "ph-005",
-    caption: "Emerging technology integration workshop — AI governance, Q1 2025",
-    imageUrl: "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=800&h=600&fit=crop&q=80",
-    capability: "emerging-tech",
-    engagementType: "training",
-    segment: "international",
-    region: "North Africa",
-    window: "Q1 2025",
-  },
-  {
-    id: "ph-006",
-    caption: "Tabletop exercise — cross-functional crisis simulation, Q4 2024",
-    imageUrl: "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=800&h=600&fit=crop&q=80",
-    capability: "cyber-security",
-    engagementType: "exercise",
-    segment: "government",
-    region: "West Africa",
-    window: "Q4 2024",
-  },
-  {
-    id: "ph-007",
-    caption: "Capability assessment — CNI operator, Q3 2024",
-    imageUrl: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800&h=600&fit=crop&q=80",
-    capability: "cyber-security",
-    engagementType: "advisory",
-    segment: "cni",
-    region: "East Africa",
-    window: "Q3 2024",
-  },
-  {
-    id: "ph-008",
-    caption: "Service deployment — security programme stand-up, Q2 2024",
-    imageUrl: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&h=600&fit=crop&q=80",
-    capability: "strategic-comms",
-    engagementType: "deployment",
-    segment: "international",
-    region: "Central Africa",
-    window: "Q2 2024",
-  },
-];
-
-const capabilityLabels: Record<GalleryItem["capability"], string> = {
+const capabilityLabels: Record<string, string> = {
   "strategic-comms": "Strategic Comms",
   "cyber-security": "Cyber Security",
   "military-intel": "Military Intelligence",
   "emerging-tech": "Emerging Tech",
 };
 
-const engagementLabels: Record<GalleryItem["engagementType"], string> = {
+const engagementLabels: Record<string, string> = {
   advisory: "Advisory",
   training: "Training",
   exercise: "Exercise",
   deployment: "Deployment",
 };
 
-const segmentLabels: Record<GalleryItem["segment"], string> = {
+const segmentLabels: Record<string, string> = {
   government: "Government & Defence",
   intelligence: "Intelligence",
   cni: "Critical Infrastructure",
@@ -148,7 +55,7 @@ const FilterPill = ({
   </button>
 );
 
-const GalleryImage = ({ item, sizes = "800px" }: { item: GalleryItem; sizes?: string }) => (
+const GalleryImage = ({ item, sizes = "800px" }: { item: Photo; sizes?: string }) => (
   <img
     src={item.imageUrl}
     alt={item.caption}
@@ -158,12 +65,24 @@ const GalleryImage = ({ item, sizes = "800px" }: { item: GalleryItem; sizes?: st
   />
 );
 
+const PhotoSkeleton = () => (
+  <div className="animate-pulse">
+    <div className="aspect-[4/3] bg-secondary/40 border border-border" />
+    <div className="pt-2.5 space-y-1.5">
+      <div className="h-3 bg-secondary/40 rounded w-3/4" />
+      <div className="h-2.5 bg-secondary/25 rounded w-1/2" />
+    </div>
+  </div>
+);
+
 const GalleryPhotos = () => {
   const { ref: heroRef, isVisible: heroVisible } = useScrollReveal(0.1);
-  const [capFilter, setCapFilter] = useState<GalleryItem["capability"] | "all">("all");
-  const [engFilter, setEngFilter] = useState<GalleryItem["engagementType"] | "all">("all");
-  const [segFilter, setSegFilter] = useState<GalleryItem["segment"] | "all">("all");
-  const [lightboxItem, setLightboxItem] = useState<GalleryItem | null>(null);
+  const [capFilter, setCapFilter] = useState("all");
+  const [engFilter, setEngFilter] = useState("all");
+  const [segFilter, setSegFilter] = useState("all");
+  const [lightboxItem, setLightboxItem] = useState<Photo | null>(null);
+
+  const { status, photos } = useGalleryPhotos();
 
   const filtered = useMemo(
     () =>
@@ -173,7 +92,7 @@ const GalleryPhotos = () => {
           (engFilter === "all" || p.engagementType === engFilter) &&
           (segFilter === "all" || p.segment === segFilter)
       ),
-    [capFilter, engFilter, segFilter]
+    [photos, capFilter, engFilter, segFilter]
   );
 
   return (
@@ -241,7 +160,7 @@ const GalleryPhotos = () => {
               Capability:
             </span>
             <FilterPill label="All" active={capFilter === "all"} onClick={() => setCapFilter("all")} />
-            {(Object.keys(capabilityLabels) as GalleryItem["capability"][]).map((k) => (
+            {Object.keys(capabilityLabels).map((k) => (
               <FilterPill
                 key={k}
                 label={capabilityLabels[k]}
@@ -256,7 +175,7 @@ const GalleryPhotos = () => {
               Type:
             </span>
             <FilterPill label="All" active={engFilter === "all"} onClick={() => setEngFilter("all")} />
-            {(Object.keys(engagementLabels) as GalleryItem["engagementType"][]).map((k) => (
+            {Object.keys(engagementLabels).map((k) => (
               <FilterPill
                 key={k}
                 label={engagementLabels[k]}
@@ -271,68 +190,91 @@ const GalleryPhotos = () => {
       {/* Grid */}
       <section className="py-12 md:py-16 px-6 md:px-12">
         <div className="max-w-[1400px] mx-auto">
-          {/* Result count */}
-          <p className="font-mono-accent text-xs text-muted-foreground mb-8 uppercase tracking-wider">
-            {filtered.length} {filtered.length === 1 ? "item" : "items"}
-          </p>
 
-          <AnimatePresence mode="popLayout">
-            {filtered.length > 0 ? (
-              <motion.div
-                key="grid"
-                layout
-                className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
-              >
-                {filtered.map((item, i) => (
+          {/* Loading */}
+          {status === "loading" && (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <PhotoSkeleton key={i} />
+              ))}
+            </div>
+          )}
+
+          {/* Error */}
+          {status === "error" && (
+            <div className="py-24 text-center">
+              <Camera className="w-8 h-8 text-border mx-auto mb-4" />
+              <p className="font-mono-accent text-sm text-muted-foreground">
+                Failed to load gallery. Please try again later.
+              </p>
+            </div>
+          )}
+
+          {/* Loaded */}
+          {status === "idle" && (
+            <>
+              <p className="font-mono-accent text-xs text-muted-foreground mb-8 uppercase tracking-wider">
+                {filtered.length} {filtered.length === 1 ? "item" : "items"}
+              </p>
+
+              <AnimatePresence mode="popLayout">
+                {filtered.length > 0 ? (
                   <motion.div
-                    key={item.id}
+                    key="grid"
                     layout
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    transition={{ delay: i * 0.04, duration: 0.4 }}
-                    className="group cursor-pointer"
-                    onClick={() => setLightboxItem(item)}
+                    className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
                   >
-                    {/* Image area */}
-                    <div className="relative aspect-[4/3] overflow-hidden border border-border group-hover:border-accent transition-colors duration-300">
-                      <GalleryImage item={item} sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw" />
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
-                      {/* Engagement type badge */}
-                      <div className="absolute top-3 left-3">
-                        <span className="font-mono-accent text-[9px] uppercase tracking-wider px-2 py-0.5 bg-background/90 text-accent border border-accent/30">
-                          {engagementLabels[item.engagementType]}
-                        </span>
-                      </div>
-                    </div>
+                    {filtered.map((item, i) => (
+                      <motion.div
+                        key={item.id}
+                        layout
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        transition={{ delay: i * 0.04, duration: 0.4 }}
+                        className="group cursor-pointer"
+                        onClick={() => setLightboxItem(item)}
+                      >
+                        <div className="relative aspect-[4/3] overflow-hidden border border-border group-hover:border-accent transition-colors duration-300">
+                          <GalleryImage item={item} sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw" />
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
+                          {item.engagementType && (
+                            <div className="absolute top-3 left-3">
+                              <span className="font-mono-accent text-[9px] uppercase tracking-wider px-2 py-0.5 bg-background/90 text-accent border border-accent/30">
+                                {engagementLabels[item.engagementType] ?? item.engagementType}
+                              </span>
+                            </div>
+                          )}
+                        </div>
 
-                    {/* Caption */}
-                    <div className="pt-2.5">
-                      <p className="font-body text-xs text-muted-foreground leading-snug line-clamp-2">
-                        {item.caption}
-                      </p>
-                      <p className="font-mono-accent text-[10px] text-muted-foreground/50 mt-1">
-                        {item.region} · {item.window}
-                      </p>
-                    </div>
+                        <div className="pt-2.5">
+                          <p className="font-body text-xs text-muted-foreground leading-snug line-clamp-2">
+                            {item.caption}
+                          </p>
+                          <p className="font-mono-accent text-[10px] text-muted-foreground/50 mt-1">
+                            {[item.region, item.window].filter(Boolean).join(" · ")}
+                          </p>
+                        </div>
+                      </motion.div>
+                    ))}
                   </motion.div>
-                ))}
-              </motion.div>
-            ) : (
-              <motion.div
-                key="empty"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="py-24 text-center"
-              >
-                <Camera className="w-8 h-8 text-border mx-auto mb-4" />
-                <p className="font-mono-accent text-sm text-muted-foreground">
-                  No items match the selected filters.
-                </p>
-              </motion.div>
-            )}
-          </AnimatePresence>
+                ) : (
+                  <motion.div
+                    key="empty"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="py-24 text-center"
+                  >
+                    <Camera className="w-8 h-8 text-border mx-auto mb-4" />
+                    <p className="font-mono-accent text-sm text-muted-foreground">
+                      No items match the selected filters.
+                    </p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </>
+          )}
         </div>
       </section>
 
@@ -344,28 +286,34 @@ const GalleryPhotos = () => {
           </DialogTitle>
           {lightboxItem && (
             <>
-              {/* Image */}
               <div className="relative aspect-[16/10] w-full overflow-hidden">
                 <GalleryImage item={lightboxItem} sizes="768px" />
               </div>
-              {/* Caption bar */}
               <div className="px-6 py-5 border-t border-border">
                 <p className="font-body text-sm text-foreground leading-relaxed mb-1">
                   {lightboxItem.caption}
                 </p>
                 <div className="flex flex-wrap gap-3 mt-3">
-                  <span className="font-mono-accent text-[10px] uppercase tracking-wider text-accent border border-accent/30 px-2 py-0.5">
-                    {engagementLabels[lightboxItem.engagementType]}
-                  </span>
-                  <span className="font-mono-accent text-[10px] uppercase tracking-wider text-muted-foreground border border-border px-2 py-0.5">
-                    {capabilityLabels[lightboxItem.capability]}
-                  </span>
-                  <span className="font-mono-accent text-[10px] uppercase tracking-wider text-muted-foreground border border-border px-2 py-0.5">
-                    {segmentLabels[lightboxItem.segment]}
-                  </span>
-                  <span className="font-mono-accent text-[10px] uppercase tracking-wider text-muted-foreground border border-border px-2 py-0.5">
-                    {lightboxItem.region} · {lightboxItem.window}
-                  </span>
+                  {lightboxItem.engagementType && (
+                    <span className="font-mono-accent text-[10px] uppercase tracking-wider text-accent border border-accent/30 px-2 py-0.5">
+                      {engagementLabels[lightboxItem.engagementType] ?? lightboxItem.engagementType}
+                    </span>
+                  )}
+                  {lightboxItem.capability && (
+                    <span className="font-mono-accent text-[10px] uppercase tracking-wider text-muted-foreground border border-border px-2 py-0.5">
+                      {capabilityLabels[lightboxItem.capability] ?? lightboxItem.capability}
+                    </span>
+                  )}
+                  {lightboxItem.segment && (
+                    <span className="font-mono-accent text-[10px] uppercase tracking-wider text-muted-foreground border border-border px-2 py-0.5">
+                      {segmentLabels[lightboxItem.segment] ?? lightboxItem.segment}
+                    </span>
+                  )}
+                  {(lightboxItem.region || lightboxItem.window) && (
+                    <span className="font-mono-accent text-[10px] uppercase tracking-wider text-muted-foreground border border-border px-2 py-0.5">
+                      {[lightboxItem.region, lightboxItem.window].filter(Boolean).join(" · ")}
+                    </span>
+                  )}
                 </div>
               </div>
             </>
