@@ -135,7 +135,7 @@ const Footer = () => {
           {/* Social icons */}
           <div className="flex items-center gap-4">
             <a
-              href="https://linkedin.com"
+              href="https://www.linkedin.com/company/joinmomentuminc/"
               target="_blank"
               rel="noopener noreferrer"
               aria-label="LinkedIn"
@@ -144,7 +144,7 @@ const Footer = () => {
               <Linkedin className="w-4 h-4" />
             </a>
             <a
-              href="https://twitter.com"
+              href="https://x.com/joinmomentuminc"
               target="_blank"
               rel="noopener noreferrer"
               aria-label="X / Twitter"
