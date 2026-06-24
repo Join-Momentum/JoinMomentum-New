@@ -1,10 +1,33 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { motion, AnimatePresence } from "framer-motion";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
-import { Mail, Clock } from "lucide-react";
+import { Mail, Clock, CheckCircle2, Loader2 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ScrollProgress from "@/components/ScrollProgress";
+
+// ── Schema ────────────────────────────────────────────────────────────────────
+
+const schema = z.object({
+  name: z.string().min(1, "Name is required"),
+  organisation: z.string().min(1, "Organisation is required"),
+  email: z
+    .string()
+    .min(1, "Email address is required")
+    .email("Please enter a valid email address"),
+  role: z.string().optional(),
+  region: z.string().optional(),
+  areaOfInterest: z.string().optional(),
+  message: z.string().min(10, "Please provide a message of at least 10 characters"),
+  _honeypot: z.string().max(0, ""),
+});
+
+type FormValues = z.infer<typeof schema>;
+
+// ── Static data ───────────────────────────────────────────────────────────────
 
 const areasOfInterest = [
   "Communications & Information Systems",
@@ -22,36 +45,90 @@ const regions = [
   "Other",
 ];
 
+// ── Sub-components ─────────────────────────────────────────────────────────────
+
+const FieldLabel = ({
+  htmlFor,
+  required,
+  children,
+}: {
+  htmlFor: string;
+  required?: boolean;
+  children: React.ReactNode;
+}) => (
+  <label
+    htmlFor={htmlFor}
+    className="block font-mono-accent text-xs uppercase tracking-wider text-muted-foreground mb-2"
+  >
+    {children}
+    {required && (
+      <span className="text-accent ml-0.5" aria-hidden="true">
+        *
+      </span>
+    )}
+  </label>
+);
+
+const FieldError = ({ id, message }: { id: string; message?: string }) =>
+  message ? (
+    <p id={id} role="alert" className="font-body text-xs text-accent mt-1.5">
+      {message}
+    </p>
+  ) : null;
+
+const inputBase =
+  "w-full bg-transparent border-b border-border focus:border-accent outline-none py-3 text-foreground font-body text-sm transition-colors duration-300 placeholder:text-muted-foreground/60";
+
+const inputError = "border-accent/70";
+
+// ── Success state ─────────────────────────────────────────────────────────────
+
+const SuccessState = () => (
+  <motion.div
+    initial={{ opacity: 0, y: 16 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.5 }}
+    className="py-16 text-center"
+  >
+    <div className="w-14 h-14 rounded-full border border-accent/30 bg-accent/5 flex items-center justify-center mx-auto mb-6">
+      <CheckCircle2 className="w-7 h-7 text-accent" />
+    </div>
+    <h3 className="font-heading font-bold text-xl mb-3">Enquiry received</h3>
+    <p className="font-body text-muted-foreground leading-relaxed max-w-md mx-auto">
+      Thank you for reaching out. A member of the Join Momentum team will respond within 24–48
+      business hours through a confidential channel. Check your inbox for a confirmation.
+    </p>
+  </motion.div>
+);
+
+// ── Page ──────────────────────────────────────────────────────────────────────
+
 const Contact = () => {
   const { ref: heroRef, isVisible: heroVisible } = useScrollReveal(0.1);
   const { ref: formRef, isVisible: formVisible } = useScrollReveal(0.2);
+  const [submitState, setSubmitState] = useState<"idle" | "loading" | "success" | "error">("idle");
 
-  const [formData, setFormData] = useState({
-    name: "",
-    organisation: "",
-    role: "",
-    region: "",
-    areaOfInterest: "",
-    message: "",
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormValues>({
+    resolver: zodResolver(schema),
+    defaultValues: { _honeypot: "" },
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const mailtoLink = `mailto:contact@joinmomentum.com?subject=${encodeURIComponent(
-      `Capability Discussion Request - ${formData.areaOfInterest}`
-    )}&body=${encodeURIComponent(
-      `Name: ${formData.name}\nOrganisation: ${formData.organisation}\nRole: ${formData.role}\nRegion: ${formData.region}\nArea of Interest: ${formData.areaOfInterest}\n\n${formData.message}`
-    )}`;
-    window.location.href = mailtoLink;
-  };
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) => {
-    setFormData((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }));
+  const onSubmit = async (data: FormValues) => {
+    setSubmitState("loading");
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...data, _honeypot: undefined }),
+      });
+      setSubmitState(res.ok ? "success" : "error");
+    } catch {
+      setSubmitState("error");
+    }
   };
 
   return (
@@ -100,7 +177,7 @@ const Contact = () => {
         </div>
       </section>
 
-      {/* Contact Form & Info */}
+      {/* Form & info */}
       <section ref={formRef} className="pb-28 md:pb-40 px-6 md:px-12">
         <div className="max-w-[1400px] mx-auto">
           <div className="grid lg:grid-cols-5 gap-12 md:gap-16">
@@ -116,125 +193,175 @@ const Contact = () => {
                   Request a Capability Discussion
                 </h2>
 
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block font-mono-accent text-xs uppercase tracking-wider text-muted-foreground mb-2">
-                        Name *
-                      </label>
-                      <input
-                        type="text"
-                        name="name"
-                        value={formData.name}
-                        onChange={handleChange}
-                        required
-                        className="w-full bg-transparent border-b border-border focus:border-accent outline-none py-3 text-foreground font-body transition-colors duration-300"
-                        placeholder="Your name"
-                      />
+                {submitState === "success" ? (
+                  <SuccessState />
+                ) : (
+                  <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-6">
+                    {/* Honeypot */}
+                    <div
+                      aria-hidden="true"
+                      className="absolute opacity-0 pointer-events-none h-0 w-0 overflow-hidden"
+                      tabIndex={-1}
+                    >
+                      <input type="text" autoComplete="off" tabIndex={-1} {...register("_honeypot")} />
                     </div>
-                    <div>
-                      <label className="block font-mono-accent text-xs uppercase tracking-wider text-muted-foreground mb-2">
-                        Organisation *
-                      </label>
-                      <input
-                        type="text"
-                        name="organisation"
-                        value={formData.organisation}
-                        onChange={handleChange}
-                        required
-                        className="w-full bg-transparent border-b border-border focus:border-accent outline-none py-3 text-foreground font-body transition-colors duration-300"
-                        placeholder="Your organisation"
-                      />
-                    </div>
-                  </div>
 
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block font-mono-accent text-xs uppercase tracking-wider text-muted-foreground mb-2">
-                        Role
-                      </label>
-                      <input
-                        type="text"
-                        name="role"
-                        value={formData.role}
-                        onChange={handleChange}
-                        className="w-full bg-transparent border-b border-border focus:border-accent outline-none py-3 text-foreground font-body transition-colors duration-300"
-                        placeholder="Your role or position"
-                      />
+                    {/* Name + Organisation */}
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div>
+                        <FieldLabel htmlFor="name" required>Name</FieldLabel>
+                        <input
+                          id="name"
+                          type="text"
+                          autoComplete="name"
+                          placeholder="Your name"
+                          {...register("name")}
+                          className={`${inputBase} ${errors.name ? inputError : ""}`}
+                          aria-describedby={errors.name ? "err-name" : undefined}
+                        />
+                        <FieldError id="err-name" message={errors.name?.message} />
+                      </div>
+                      <div>
+                        <FieldLabel htmlFor="organisation" required>Organisation</FieldLabel>
+                        <input
+                          id="organisation"
+                          type="text"
+                          autoComplete="organization"
+                          placeholder="Your organisation"
+                          {...register("organisation")}
+                          className={`${inputBase} ${errors.organisation ? inputError : ""}`}
+                          aria-describedby={errors.organisation ? "err-organisation" : undefined}
+                        />
+                        <FieldError id="err-organisation" message={errors.organisation?.message} />
+                      </div>
                     </div>
+
+                    {/* Email */}
                     <div>
-                      <label className="block font-mono-accent text-xs uppercase tracking-wider text-muted-foreground mb-2">
-                        Region
-                      </label>
+                      <FieldLabel htmlFor="email" required>Email address</FieldLabel>
+                      <input
+                        id="email"
+                        type="email"
+                        autoComplete="email"
+                        placeholder="your@organisation.com"
+                        {...register("email")}
+                        className={`${inputBase} ${errors.email ? inputError : ""}`}
+                        aria-describedby={errors.email ? "err-email" : undefined}
+                      />
+                      <FieldError id="err-email" message={errors.email?.message} />
+                    </div>
+
+                    {/* Role + Region */}
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div>
+                        <FieldLabel htmlFor="role">Role</FieldLabel>
+                        <input
+                          id="role"
+                          type="text"
+                          placeholder="Your role or position"
+                          {...register("role")}
+                          className={inputBase}
+                        />
+                      </div>
+                      <div>
+                        <FieldLabel htmlFor="region">Region</FieldLabel>
+                        <select
+                          id="region"
+                          {...register("region")}
+                          className={`${inputBase} cursor-pointer`}
+                        >
+                          <option value="" className="bg-card text-muted-foreground">
+                            Select region
+                          </option>
+                          {regions.map((r) => (
+                            <option key={r} value={r} className="bg-card text-foreground">
+                              {r}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Area of interest */}
+                    <div>
+                      <FieldLabel htmlFor="areaOfInterest">Area of Interest</FieldLabel>
                       <select
-                        name="region"
-                        value={formData.region}
-                        onChange={handleChange}
-                        className="w-full bg-transparent border-b border-border focus:border-accent outline-none py-3 text-foreground font-body transition-colors duration-300 cursor-pointer"
+                        id="areaOfInterest"
+                        {...register("areaOfInterest")}
+                        className={`${inputBase} cursor-pointer`}
                       >
                         <option value="" className="bg-card text-muted-foreground">
-                          Select region
+                          Select area of interest
                         </option>
-                        {regions.map((region) => (
-                          <option key={region} value={region} className="bg-card text-foreground">
-                            {region}
+                        {areasOfInterest.map((a) => (
+                          <option key={a} value={a} className="bg-card text-foreground">
+                            {a}
                           </option>
                         ))}
                       </select>
                     </div>
-                  </div>
 
-                  <div>
-                    <label className="block font-mono-accent text-xs uppercase tracking-wider text-muted-foreground mb-2">
-                      Area of Interest
-                    </label>
-                    <select
-                      name="areaOfInterest"
-                      value={formData.areaOfInterest}
-                      onChange={handleChange}
-                      className="w-full bg-transparent border-b border-border focus:border-accent outline-none py-3 text-foreground font-body transition-colors duration-300 cursor-pointer"
+                    {/* Message */}
+                    <div>
+                      <FieldLabel htmlFor="message" required>Message</FieldLabel>
+                      <textarea
+                        id="message"
+                        rows={5}
+                        placeholder="Tell us about your capability needs or challenges…"
+                        {...register("message")}
+                        className={`${inputBase} resize-none ${errors.message ? inputError : ""}`}
+                        aria-describedby={errors.message ? "err-message" : undefined}
+                      />
+                      <FieldError id="err-message" message={errors.message?.message} />
+                    </div>
+
+                    {/* Submit */}
+                    <button
+                      type="submit"
+                      disabled={submitState === "loading"}
+                      className="group inline-flex items-center gap-3 px-10 py-4 border border-accent text-accent font-heading font-semibold text-sm uppercase tracking-widest transition-all duration-300 hover:bg-accent hover:text-accent-foreground disabled:opacity-60 disabled:cursor-not-allowed mt-2"
                     >
-                      <option value="" className="bg-card text-muted-foreground">
-                        Select area of interest
-                      </option>
-                      {areasOfInterest.map((area) => (
-                        <option key={area} value={area} className="bg-card text-foreground">
-                          {area}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                      {submitState === "loading" ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Sending…
+                        </>
+                      ) : (
+                        "Request a Capability Discussion"
+                      )}
+                    </button>
 
-                  <div>
-                    <label className="block font-mono-accent text-xs uppercase tracking-wider text-muted-foreground mb-2">
-                      Message *
-                    </label>
-                    <textarea
-                      name="message"
-                      value={formData.message}
-                      onChange={handleChange}
-                      required
-                      rows={5}
-                      className="w-full bg-transparent border-b border-border focus:border-accent outline-none py-3 text-foreground font-body transition-colors duration-300 resize-none"
-                      placeholder="Tell us about your capability needs or challenges..."
-                    />
-                  </div>
+                    {/* Error */}
+                    <AnimatePresence>
+                      {submitState === "error" && (
+                        <motion.p
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          className="font-body text-sm text-accent/80"
+                        >
+                          There was a problem sending your message. Please try again or email us
+                          directly at{" "}
+                          <a
+                            href="mailto:hello@joinmomentum.io"
+                            className="underline hover:text-accent"
+                          >
+                            hello@joinmomentum.io
+                          </a>
+                          .
+                        </motion.p>
+                      )}
+                    </AnimatePresence>
 
-                  <button
-                    type="submit"
-                    className="inline-flex items-center px-10 py-4 border border-accent text-accent font-heading font-semibold text-sm uppercase tracking-widest transition-all duration-400 hover:bg-accent hover:text-accent-foreground mt-4"
-                  >
-                    Request a Capability Discussion
-                  </button>
-                </form>
-
-                <p className="mt-8 text-muted-foreground/60 font-mono-accent text-xs">
-                  All communications handled with appropriate confidentiality.
-                </p>
+                    <p className="font-body text-xs text-muted-foreground/60 leading-relaxed border-t border-border pt-6">
+                      All communications handled with appropriate confidentiality.
+                    </p>
+                  </form>
+                )}
               </div>
             </motion.div>
 
-            {/* Contact Info */}
+            {/* Contact info */}
             <motion.div
               className="lg:col-span-2 space-y-8"
               initial={{ opacity: 0, y: 30 }}
@@ -247,12 +374,12 @@ const Contact = () => {
                 </h3>
                 <div className="space-y-4">
                   <a
-                    href="mailto:contact@joinmomentum.com"
+                    href="mailto:hello@joinmomentum.io"
                     className="flex items-center gap-4 text-muted-foreground hover:text-foreground transition-colors group"
                   >
                     <Mail className="w-5 h-5 text-accent" />
                     <span className="font-body text-sm group-hover:underline">
-                      contact@joinmomentum.com
+                      hello@joinmomentum.io
                     </span>
                   </a>
                 </div>
@@ -264,7 +391,7 @@ const Contact = () => {
                 </h3>
                 <div className="flex items-center gap-4 text-muted-foreground">
                   <Clock className="w-5 h-5 text-accent" />
-                  <span className="font-body text-sm">Within 24-48 business hours</span>
+                  <span className="font-body text-sm">Within 24–48 business hours</span>
                 </div>
               </div>
 

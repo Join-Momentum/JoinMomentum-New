@@ -68,14 +68,14 @@ const megaMenus = [
     cta: { label: "View the Marketplace", path: "/marketplace" },
   },
   {
-    key: "about",
-    label: "About",
-    path: "/about",
+    key: "insights",
+    label: "Insights",
+    path: "/insights",
     items: [
       { name: "Photo Gallery", path: "/gallery/photos" },
       { name: "Video Gallery", path: "/gallery/videos" },
     ],
-    cta: { label: "About Join Momentum", path: "/about" },
+    cta: { label: "View Insights", path: "/insights" },
   },
 ] as const;
 
@@ -83,7 +83,7 @@ type MegaKey = (typeof megaMenus)[number]["key"];
 
 const simpleLinks = [
   { name: "Who We Serve", path: "/who-we-serve" },
-  { name: "Insights", path: "/insights" },
+  { name: "About", path: "/about" },
 ];
 
 // ─── Navbar ──────────────────────────────────────────────────────────────────
@@ -272,7 +272,7 @@ const Navbar = () => {
                       {activeMenu.key === "capabilities" && "Four interconnected domains — each can be engaged independently."}
                       {activeMenu.key === "solutions" && "Four delivery models for bespoke engagements."}
                       {activeMenu.key === "marketplace" && "Named, packaged programmes available to organisations directly."}
-                      {activeMenu.key === "about" && "Selected anonymised imagery and video from Join Momentum delivery and engagements."}
+                      {activeMenu.key === "insights" && "Selected anonymised imagery and video from Join Momentum delivery and engagements."}
                     </p>
                   </div>
                   <Link

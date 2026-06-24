@@ -871,10 +871,10 @@ const MarketplaceCTIPS = () => {
                   Direct contact
                 </h3>
                 <a
-                  href="mailto:marketplace@joinmomentum.com"
+                  href="mailto:sales@joinmomentum.io"
                   className="font-body text-sm text-muted-foreground hover:text-accent transition-colors duration-200 block"
                 >
-                  marketplace@joinmomentum.com
+                  sales@joinmomentum.io
                 </a>
               </div>
 

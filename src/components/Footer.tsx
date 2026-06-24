@@ -78,10 +78,10 @@ const Footer = () => {
             <ul className="space-y-1 text-sm text-muted-foreground font-body">
               <li>
                 <a
-                  href="mailto:enquiries@joinmomentum.com"
+                  href="mailto:hello@joinmomentum.io"
                   className="hover:text-accent transition-colors duration-200"
                 >
-                  enquiries@joinmomentum.com
+                  hello@joinmomentum.io
                 </a>
               </li>
             </ul>

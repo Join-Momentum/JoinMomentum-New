@@ -37,7 +37,7 @@ const ContactFooter = () => {
           </motion.p>
 
           <motion.a
-            href="mailto:contact@joinmomentum.com"
+            href="mailto:hello@joinmomentum.io"
             className="inline-flex items-center px-8 py-3 border border-accent text-accent font-heading font-semibold text-sm uppercase tracking-widest transition-all duration-400 hover:bg-accent hover:text-accent-foreground"
             initial={{ opacity: 0, y: 20 }}
             animate={isVisible ? { opacity: 1, y: 0 } : {}}

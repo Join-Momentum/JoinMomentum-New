@@ -3,7 +3,8 @@ import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
 import type { Plugin } from "vite";
-import type { ServerResponse } from "node:http";
+import type { IncomingMessage, ServerResponse } from "node:http";
+import { Resend } from "resend";
 
 // ── Gallery API dev plugin ────────────────────────────────────────────────────
 // Serves /api/gallery-photos and /api/gallery-videos during `npm run dev`.
@@ -122,6 +123,132 @@ async function serveVideos(res: ServerResponse, env: Record<string, string>) {
   }
 }
 
+// ── Form POST helpers ─────────────────────────────────────────────────────────
+
+async function readBody(req: IncomingMessage): Promise<Record<string, unknown>> {
+  return new Promise((resolve) => {
+    const chunks: Buffer[] = [];
+    req.on("data", (c: Buffer) => chunks.push(c));
+    req.on("end", () => {
+      try { resolve(JSON.parse(Buffer.concat(chunks).toString())); }
+      catch { resolve({}); }
+    });
+    req.on("error", () => resolve({}));
+  });
+}
+
+const orgTypeLabels: Record<string, string> = {
+  organisation: "Organisation", agency: "Agency",
+  government_department: "Government Department", other: "Other",
+};
+const requestTypeLabels: Record<string, string> = {
+  detailed_information_pricing: "Detailed Information & Pricing",
+  ask_to_be_contacted: "Ask to Be Contacted",
+  request_scoping_call: "Request a Scoping Call",
+};
+
+async function handleContact(res: ServerResponse, env: Record<string, string>, body: Record<string, unknown>) {
+  const { RESEND_API_KEY, RESEND_FROM_EMAIL, RESEND_TO_CONTACT } = env;
+  if (!RESEND_API_KEY) {
+    res.writeHead(500, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ error: "RESEND_API_KEY missing from .env.local" }));
+    return;
+  }
+  if (body._honeypot) { res.writeHead(200, { "Content-Type": "application/json" }); res.end(JSON.stringify({ ok: true })); return; }
+
+  const name = (body.name as string)?.trim();
+  const organisation = (body.organisation as string)?.trim();
+  const email = (body.email as string)?.trim();
+  const message = (body.message as string)?.trim();
+  if (!name || !organisation || !email || !message) {
+    res.writeHead(400, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ error: "Missing required fields" }));
+    return;
+  }
+
+  const from = RESEND_FROM_EMAIL || "onboarding@resend.dev";
+  const toTeam = RESEND_TO_CONTACT || "hello@joinmomentum.io";
+  const resend = new Resend(RESEND_API_KEY);
+  const fields = [
+    ["Name", name], ["Organisation", organisation], ["Email", email],
+    ["Role", (body.role as string) || "—"], ["Region", (body.region as string) || "—"],
+    ["Area of Interest", (body.areaOfInterest as string) || "—"],
+  ];
+  const rows = fields.map(([l, v]) => `<tr><td style="padding:6px 16px 6px 0;font-family:monospace;font-size:11px;text-transform:uppercase;color:#888;white-space:nowrap;vertical-align:top">${l}</td><td style="padding:6px 0;font-family:sans-serif;font-size:14px;color:#111">${v}</td></tr>`).join("");
+  const notifHtml = `<!DOCTYPE html><html><body style="background:#f4f4f4;padding:32px 16px;font-family:sans-serif"><table width="600" style="background:#fff;border:1px solid #e4e4e4;margin:0 auto"><tr><td style="background:#0a0a0a;padding:24px 32px"><p style="margin:0;font-family:monospace;font-size:11px;text-transform:uppercase;letter-spacing:.15em;color:#e11414">Join Momentum</p><p style="margin:6px 0 0;font-size:20px;font-weight:700;color:#fff">New Capability Discussion Request</p></td></tr><tr><td style="padding:32px"><table>${rows}</table><div style="margin-top:24px;padding-top:24px;border-top:1px solid #e4e4e4"><p style="margin:0 0 8px;font-family:monospace;font-size:11px;text-transform:uppercase;color:#888">Message</p><p style="margin:0;font-size:14px;color:#111;line-height:1.6;white-space:pre-wrap">${message}</p></div></td></tr></table></body></html>`;
+  const replyHtml = `<!DOCTYPE html><html><body style="background:#f4f4f4;padding:32px 16px;font-family:sans-serif"><table width="600" style="background:#fff;border:1px solid #e4e4e4;margin:0 auto"><tr><td style="background:#0a0a0a;padding:24px 32px"><p style="margin:0;font-family:monospace;font-size:11px;text-transform:uppercase;letter-spacing:.15em;color:#e11414">Join Momentum</p><p style="margin:6px 0 0;font-size:20px;font-weight:700;color:#fff">Enquiry Received</p></td></tr><tr><td style="padding:32px"><p style="margin:0 0 16px;font-size:15px;color:#111">Dear ${name},</p><p style="margin:0 0 16px;font-size:14px;color:#444;line-height:1.7">Thank you for reaching out to Join Momentum. We have received your capability discussion request and a member of our team will respond within <strong>24–48 business hours</strong> through a confidential channel.</p><p style="margin:0;font-size:14px;color:#444;line-height:1.7">For follow-up, contact us at <a href="mailto:hello@joinmomentum.io" style="color:#e11414">hello@joinmomentum.io</a>.</p></td></tr></table></body></html>`;
+
+  try {
+    await Promise.all([
+      resend.emails.send({ from, to: [toTeam], subject: `Capability Discussion Request — ${name} (${organisation})`, html: notifHtml, replyTo: email }),
+      resend.emails.send({ from, to: [email], subject: "Your enquiry to Join Momentum", html: replyHtml }),
+    ]);
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ ok: true }));
+  } catch (err) {
+    console.error("[api/contact] Resend error:", err);
+    res.writeHead(502, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ error: "Failed to send email" }));
+  }
+}
+
+async function handleMarketplaceEnquiry(res: ServerResponse, env: Record<string, string>, body: Record<string, unknown>) {
+  const { RESEND_API_KEY, RESEND_FROM_EMAIL, RESEND_TO_MARKETPLACE } = env;
+  if (!RESEND_API_KEY) {
+    res.writeHead(500, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ error: "RESEND_API_KEY missing from .env.local" }));
+    return;
+  }
+  if (body._honeypot) { res.writeHead(200, { "Content-Type": "application/json" }); res.end(JSON.stringify({ ok: true })); return; }
+
+  const fullName = (body.fullName as string)?.trim();
+  const organisation = (body.organisation as string)?.trim();
+  const workEmail = (body.workEmail as string)?.trim();
+  const requestType = body.requestType as string;
+  if (!fullName || !organisation || !workEmail || !requestType) {
+    res.writeHead(400, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ error: "Missing required fields" }));
+    return;
+  }
+
+  const from = RESEND_FROM_EMAIL || "onboarding@resend.dev";
+  const toTeam = RESEND_TO_MARKETPLACE || "sales@joinmomentum.io";
+  const listing = (body.listing as string) || "Join Momentum Marketplace";
+  const resend = new Resend(RESEND_API_KEY);
+  const reqLabel = requestTypeLabels[requestType] ?? requestType;
+  const fields = [
+    ["Full Name", fullName], ["Organisation", organisation],
+    ["Org Type", (orgTypeLabels[body.orgType as string] ?? (body.orgType as string)) || "—"],
+    ["Role", (body.role as string) || "—"], ["Region", (body.region as string) || "—"],
+    ["Work Email", workEmail], ["Phone", (body.phone as string) || "—"],
+    ["Request Type", reqLabel],
+    ["Delivery", (body.deliveryPreference as string) || "—"],
+    ["Participants", (body.participantNumbers as string) || "—"],
+    ["Timing", (body.preferredTiming as string) || "—"],
+    ["Listing", listing],
+  ];
+  const rows = fields.map(([l, v]) => `<tr><td style="padding:6px 16px 6px 0;font-family:monospace;font-size:11px;text-transform:uppercase;color:#888;white-space:nowrap;vertical-align:top">${l}</td><td style="padding:6px 0;font-family:sans-serif;font-size:14px;color:#111">${v}</td></tr>`).join("");
+  const msg = (body.message as string)?.trim();
+  const msgSection = msg ? `<div style="margin-top:24px;padding-top:24px;border-top:1px solid #e4e4e4"><p style="margin:0 0 8px;font-family:monospace;font-size:11px;text-transform:uppercase;color:#888">Message</p><p style="margin:0;font-size:14px;color:#111;line-height:1.6;white-space:pre-wrap">${msg}</p></div>` : "";
+  const notifHtml = `<!DOCTYPE html><html><body style="background:#f4f4f4;padding:32px 16px;font-family:sans-serif"><table width="600" style="background:#fff;border:1px solid #e4e4e4;margin:0 auto"><tr><td style="background:#0a0a0a;padding:24px 32px"><p style="margin:0;font-family:monospace;font-size:11px;text-transform:uppercase;letter-spacing:.15em;color:#e11414">Join Momentum · Marketplace</p><p style="margin:6px 0 0;font-size:20px;font-weight:700;color:#fff">New Marketplace Enquiry</p></td></tr><tr><td style="padding:32px"><table>${rows}</table>${msgSection}</td></tr></table></body></html>`;
+  const replyHtml = `<!DOCTYPE html><html><body style="background:#f4f4f4;padding:32px 16px;font-family:sans-serif"><table width="600" style="background:#fff;border:1px solid #e4e4e4;margin:0 auto"><tr><td style="background:#0a0a0a;padding:24px 32px"><p style="margin:0;font-family:monospace;font-size:11px;text-transform:uppercase;letter-spacing:.15em;color:#e11414">Join Momentum · Marketplace</p><p style="margin:6px 0 0;font-size:20px;font-weight:700;color:#fff">Enquiry Received</p></td></tr><tr><td style="padding:32px"><p style="margin:0 0 16px;font-size:15px;color:#111">Dear ${fullName},</p><p style="margin:0 0 16px;font-size:14px;color:#444;line-height:1.7">Thank you for your enquiry regarding <strong>${listing}</strong>. We have received your request for <strong>${reqLabel}</strong> and a member of the Join Momentum team will be in touch through a confidential channel.</p><p style="margin:0;font-size:14px;color:#444;line-height:1.7">For urgent queries contact <a href="mailto:sales@joinmomentum.io" style="color:#e11414">sales@joinmomentum.io</a>.</p></td></tr></table></body></html>`;
+
+  try {
+    await Promise.all([
+      resend.emails.send({ from, to: [toTeam], subject: `Marketplace Enquiry — ${fullName} (${organisation}) · ${reqLabel}`, html: notifHtml, replyTo: workEmail }),
+      resend.emails.send({ from, to: [workEmail], subject: `Your enquiry to Join Momentum — ${listing}`, html: replyHtml }),
+    ]);
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ ok: true }));
+  } catch (err) {
+    console.error("[api/marketplace-enquiry] Resend error:", err);
+    res.writeHead(502, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ error: "Failed to send email" }));
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 function galleryApiPlugin(env: Record<string, string>): Plugin {
   return {
     name: "gallery-api-dev",
@@ -132,6 +259,10 @@ function galleryApiPlugin(env: Record<string, string>): Plugin {
           servePhotos(res, env).catch(next);
         } else if (req.url === "/api/gallery-videos") {
           serveVideos(res, env).catch(next);
+        } else if (req.url === "/api/contact" && req.method === "POST") {
+          readBody(req).then((body) => handleContact(res, env, body)).catch(next);
+        } else if (req.url === "/api/marketplace-enquiry" && req.method === "POST") {
+          readBody(req).then((body) => handleMarketplaceEnquiry(res, env, body)).catch(next);
         } else {
           next();
         }

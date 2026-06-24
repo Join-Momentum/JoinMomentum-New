@@ -492,10 +492,10 @@ const RequestDetailedInfoForm = ({
               There was a problem submitting your enquiry. Please try again or contact us directly
               at{" "}
               <a
-                href="mailto:marketplace@joinmomentum.com"
+                href="mailto:sales@joinmomentum.io"
                 className="underline hover:text-accent"
               >
-                marketplace@joinmomentum.com
+                sales@joinmomentum.io
               </a>
               .
             </motion.p>
