@@ -33,7 +33,6 @@ const schema = z
     consent: z
       .boolean()
       .refine((v) => v === true, "You must confirm consent to submit this form"),
-    _honeypot: z.string().max(0, ""),
   })
   .superRefine((data, ctx) => {
     if (
@@ -126,7 +125,6 @@ const RequestDetailedInfoForm = ({
     defaultValues: {
       requestType: defaultRequestType,
       consent: false,
-      _honeypot: "",
     },
   });
 
@@ -142,7 +140,6 @@ const RequestDetailedInfoForm = ({
         body: JSON.stringify({
           ...data,
           listing: listingSlug,
-          _honeypot: undefined,
         }),
       });
       if (res.ok) {
@@ -183,7 +180,7 @@ const RequestDetailedInfoForm = ({
         className="absolute opacity-0 pointer-events-none h-0 w-0 overflow-hidden"
         tabIndex={-1}
       >
-        <input type="text" autoComplete="off" tabIndex={-1} {...register("_honeypot")} />
+        <input type="text" name="_honeypot" autoComplete="off" tabIndex={-1} />
       </div>
 
       <div className="space-y-8">

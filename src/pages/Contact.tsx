@@ -22,7 +22,6 @@ const schema = z.object({
   region: z.string().optional(),
   areaOfInterest: z.string().optional(),
   message: z.string().min(10, "Please provide a message of at least 10 characters"),
-  _honeypot: z.string().max(0, ""),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -114,7 +113,6 @@ const Contact = () => {
     formState: { errors, isSubmitted },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { _honeypot: "" },
   });
 
   const onSubmit = async (data: FormValues) => {
@@ -123,7 +121,7 @@ const Contact = () => {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...data, _honeypot: undefined }),
+        body: JSON.stringify(data),
       });
       setSubmitState(res.ok ? "success" : "error");
     } catch {
@@ -131,9 +129,10 @@ const Contact = () => {
     }
   };
 
-  const scrollToFirstError = () => {
+  const scrollToFirstError = (fieldErrors: Record<string, unknown>) => {
     const fieldOrder = ["name", "organisation", "email", "message"] as const;
     for (const field of fieldOrder) {
+      if (!fieldErrors[field]) continue;
       const el = document.getElementById(field);
       if (el) {
         const top = el.getBoundingClientRect().top + window.scrollY - 96;
@@ -216,7 +215,7 @@ const Contact = () => {
                       className="absolute opacity-0 pointer-events-none h-0 w-0 overflow-hidden"
                       tabIndex={-1}
                     >
-                      <input type="text" autoComplete="off" tabIndex={-1} {...register("_honeypot")} />
+                      <input type="text" name="_honeypot" autoComplete="off" tabIndex={-1} />
                     </div>
 
                     {/* Name + Organisation */}
