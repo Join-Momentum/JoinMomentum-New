@@ -111,7 +111,7 @@ const Contact = () => {
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitted },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: { _honeypot: "" },
@@ -128,6 +128,19 @@ const Contact = () => {
       setSubmitState(res.ok ? "success" : "error");
     } catch {
       setSubmitState("error");
+    }
+  };
+
+  const scrollToFirstError = () => {
+    const fieldOrder = ["name", "organisation", "email", "message"] as const;
+    for (const field of fieldOrder) {
+      const el = document.getElementById(field);
+      if (el) {
+        const top = el.getBoundingClientRect().top + window.scrollY - 96;
+        window.scrollTo({ top, behavior: "smooth" });
+        el.focus({ preventScroll: true });
+        break;
+      }
     }
   };
 
@@ -196,7 +209,7 @@ const Contact = () => {
                 {submitState === "success" ? (
                   <SuccessState />
                 ) : (
-                  <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-6">
+                  <form onSubmit={handleSubmit(onSubmit, scrollToFirstError)} noValidate className="space-y-6">
                     {/* Honeypot */}
                     <div
                       aria-hidden="true"
@@ -314,6 +327,21 @@ const Contact = () => {
                       />
                       <FieldError id="err-message" message={errors.message?.message} />
                     </div>
+
+                    {/* Validation hint — only after first submit attempt */}
+                    <AnimatePresence>
+                      {isSubmitted && Object.keys(errors).length > 0 && submitState !== "loading" && (
+                        <motion.p
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          className="font-body text-xs text-accent/80"
+                          role="alert"
+                        >
+                          Please complete all required fields above before submitting.
+                        </motion.p>
+                      )}
+                    </AnimatePresence>
 
                     {/* Submit */}
                     <button
