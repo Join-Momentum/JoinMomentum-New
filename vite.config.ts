@@ -69,6 +69,31 @@ async function servePhotos(res: ServerResponse, env: Record<string, string>) {
   }
 }
 
+function parseVimeoMeta(description: string): {
+  caption: string; capability: string; engagementType: string;
+  segment: string; region: string; window: string;
+} {
+  const empty = { caption: "", capability: "", engagementType: "", segment: "", region: "", window: "" };
+  const match = description?.match(/---\s*\n([\s\S]*?)\n---/);
+  if (!match) return empty;
+  const kv: Record<string, string> = {};
+  for (const line of match[1].split("\n")) {
+    const colon = line.indexOf(":");
+    if (colon === -1) continue;
+    const key = line.slice(0, colon).trim();
+    const value = line.slice(colon + 1).trim();
+    if (key && value) kv[key] = value;
+  }
+  return {
+    caption: kv.caption ?? "",
+    capability: kv.capability ?? "",
+    engagementType: kv.engagement_type ?? "",
+    segment: kv.segment ?? "",
+    region: kv.region ?? "",
+    window: kv.window ?? "",
+  };
+}
+
 async function serveVideos(res: ServerResponse, env: Record<string, string>) {
   const token = env.VIMEO_ACCESS_TOKEN;
 
@@ -81,7 +106,7 @@ async function serveVideos(res: ServerResponse, env: Record<string, string>) {
 
   const apiUrl =
     "https://api.vimeo.com/me/projects/29555979/videos" +
-    "?fields=uri,name,duration,pictures.sizes,created_time&per_page=50";
+    "?fields=uri,name,description,duration,pictures.sizes,created_time&per_page=50";
 
   console.log("[gallery-api] Fetching Vimeo videos…");
   try {
@@ -100,18 +125,14 @@ async function serveVideos(res: ServerResponse, env: Record<string, string>) {
       const videoId = (v.uri as string).replace("/videos/", "");
       const sizes = (v.pictures as { sizes?: { width: number; link: string }[] } | undefined)?.sizes ?? [];
       const thumb = sizes.find((s) => s.width >= 1280)?.link ?? sizes[sizes.length - 1]?.link ?? "";
+      const meta = parseVimeoMeta((v.description as string) ?? "");
       return {
         id: videoId,
         title: (v.name as string) ?? "",
-        caption: "",
         duration: formatDuration((v.duration as number) ?? 0),
         thumbnailUrl: thumb,
         videoUrl: `https://player.vimeo.com/video/${videoId}?autoplay=1&badge=0&autopause=0`,
-        capability: "",
-        engagementType: "",
-        segment: "",
-        region: "",
-        window: "",
+        ...meta,
       };
     });
     res.writeHead(200, { "Content-Type": "application/json" });
