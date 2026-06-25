@@ -123,8 +123,26 @@ const Contact = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
-      setSubmitState(res.ok ? "success" : "error");
-    } catch {
+
+      // Read the response body so server-side failures (e.g. Resend rejecting an
+      // unverified From-domain, or missing env vars) are visible instead of
+      // collapsing into a silent generic error.
+      const payload = (await res.json().catch(() => null)) as
+        | { ok?: boolean; error?: string }
+        | null;
+
+      if (res.ok && payload?.ok) {
+        setSubmitState("success");
+      } else {
+        console.error(
+          "[contact] submission failed:",
+          res.status,
+          payload?.error ?? "(no error body)"
+        );
+        setSubmitState("error");
+      }
+    } catch (err) {
+      console.error("[contact] network error:", err);
       setSubmitState("error");
     }
   };
