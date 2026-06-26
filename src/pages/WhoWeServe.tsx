@@ -7,21 +7,25 @@ import ScrollProgress from "@/components/ScrollProgress";
 
 const sectors = [
   {
+    id: "government-defence",
     icon: Shield,
     title: "Government & Defence",
     description: "Supporting defence ministries, armed forces, and public security institutions.",
   },
   {
+    id: "intelligence-national-security",
     icon: Eye,
     title: "Intelligence & National Security",
     description: "Strengthening intelligence processes, decision support, and operational coordination.",
   },
   {
+    id: "critical-national-infrastructure",
     icon: Building2,
     title: "Critical National Infrastructure & Strategic Organisations",
     description: "Protecting systems and services where disruption has national or systemic impact.",
   },
   {
+    id: "international-multilateral-partners",
     icon: Globe,
     title: "International & Multilateral Partners",
     description: "Operating respectfully within sovereign, regional, and institutional frameworks.",
@@ -40,6 +44,7 @@ const SectorRow = ({
 
   return (
     <motion.div
+      id={sector.id}
       ref={ref}
       initial={{ opacity: 0 }}
       animate={isVisible ? { opacity: 1 } : {}}

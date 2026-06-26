@@ -10,7 +10,7 @@ const segments = [
     title: "Government & Defence",
     description:
       "Supporting defence ministries, armed forces, and public security institutions to build and sustain operational capability in complex environments.",
-    path: "/who-we-serve/government-defence",
+    path: "/who-we-serve#government-defence",
   },
   {
     icon: Eye,
@@ -18,7 +18,7 @@ const segments = [
     title: "Intelligence & National Security",
     description:
       "Strengthening intelligence processes, decision support, and coordination for national security institutions operating under persistent pressure.",
-    path: "/who-we-serve/intelligence-national-security",
+    path: "/who-we-serve#intelligence-national-security",
   },
   {
     icon: Zap,
@@ -26,7 +26,7 @@ const segments = [
     title: "Critical National Infrastructure",
     description:
       "Protecting systems and services where disruption carries national or systemic impact — energy, communications, finance, transport.",
-    path: "/who-we-serve/critical-national-infrastructure",
+    path: "/who-we-serve#critical-national-infrastructure",
   },
   {
     icon: Globe,
@@ -34,7 +34,7 @@ const segments = [
     title: "International & Multilateral Partners",
     description:
       "Operating within sovereign, regional, and institutional frameworks to build shared security capacity and sustained capability.",
-    path: "/who-we-serve/international-multilateral-partners",
+    path: "/who-we-serve#international-multilateral-partners",
   },
 ];
 

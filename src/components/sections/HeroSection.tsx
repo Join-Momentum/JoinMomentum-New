@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 import HexGrid from "../HexGrid";
 import { ArrowDown, ArrowRight } from "lucide-react";
 
@@ -45,13 +46,13 @@ const HeroSection = () => {
           transition={{ delay: 1.2, duration: 0.6 }}
           className="mt-10"
         >
-          <a
-            href="#contact"
+          <Link
+            to="/contact"
             className="group inline-flex items-center gap-3 px-8 py-4 bg-accent text-accent-foreground font-heading font-semibold text-sm uppercase tracking-widest transition-all duration-400 hover:bg-accent/90 hover:gap-4"
           >
             Request a Capability Discussion
             <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
-          </a>
+          </Link>
         </motion.div>
 
         <motion.div

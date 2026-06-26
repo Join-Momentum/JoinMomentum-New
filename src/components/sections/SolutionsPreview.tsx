@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
 import { ArrowRight, ClipboardList, GraduationCap, Users, Rocket } from "lucide-react";
 
+
 const solutions = [
   {
     icon: ClipboardList,
@@ -92,33 +93,37 @@ const SolutionsPreview = () => {
           {solutions.map((sol, i) => (
             <motion.div
               key={sol.title}
-              className="group relative p-8 bg-background border border-border hover:border-accent transition-all duration-400"
               initial={{ opacity: 0, y: 30 }}
               animate={isVisible ? { opacity: 1, y: 0 } : {}}
               transition={{ delay: 0.3 + i * 0.1, duration: 0.5 }}
             >
-              <div className="flex items-start gap-5 mb-5">
-                <div className="flex-shrink-0 w-12 h-12 border border-border bg-secondary/50 flex items-center justify-center group-hover:border-accent transition-colors duration-300">
-                  <sol.icon className="w-5 h-5 text-accent" />
+              <Link
+                to={sol.path}
+                className="group relative p-8 bg-background border border-border hover:border-accent transition-all duration-400 block"
+              >
+                <div className="flex items-start gap-5 mb-5">
+                  <div className="flex-shrink-0 w-12 h-12 border border-border bg-secondary/50 flex items-center justify-center group-hover:border-accent transition-colors duration-300">
+                    <sol.icon className="w-5 h-5 text-accent" />
+                  </div>
+                  <span className="font-mono-accent text-xs text-muted-foreground mt-1">
+                    {sol.number}
+                  </span>
                 </div>
-                <span className="font-mono-accent text-xs text-muted-foreground mt-1">
-                  {sol.number}
-                </span>
-              </div>
 
-              <h3 className="font-heading font-semibold text-lg mb-3 leading-tight group-hover:text-accent transition-colors duration-300">
-                {sol.title}
-              </h3>
-              <p className="text-muted-foreground font-body text-sm leading-relaxed">
-                {sol.description}
-              </p>
+                <h3 className="font-heading font-semibold text-lg mb-3 leading-tight group-hover:text-accent transition-colors duration-300">
+                  {sol.title}
+                </h3>
+                <p className="text-muted-foreground font-body text-sm leading-relaxed">
+                  {sol.description}
+                </p>
 
-              <motion.div
-                className="absolute bottom-0 left-0 h-[2px] bg-accent"
-                initial={{ width: 0 }}
-                whileHover={{ width: "100%" }}
-                transition={{ duration: 0.3 }}
-              />
+                <motion.div
+                  className="absolute bottom-0 left-0 h-[2px] bg-accent"
+                  initial={{ width: 0 }}
+                  whileHover={{ width: "100%" }}
+                  transition={{ duration: 0.3 }}
+                />
+              </Link>
             </motion.div>
           ))}
         </div>
