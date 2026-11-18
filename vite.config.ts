@@ -5,17 +5,12 @@ import { componentTagger } from "lovable-tagger";
 import type { Plugin } from "vite";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { Resend } from "resend";
+import { getGalleryVideos, MuxError } from "./api/_mux";
 
 // ── Gallery API dev plugin ────────────────────────────────────────────────────
 // Serves /api/gallery-photos and /api/gallery-videos during `npm run dev`.
 // Uses loadEnv so credentials from .env.local are available in this Node context
 // (process.env does NOT automatically contain .env.local values in Vite).
-
-function formatDuration(seconds: number): string {
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${m}:${String(s).padStart(2, "0")}`;
-}
 
 async function servePhotos(res: ServerResponse, env: Record<string, string>) {
   const apiKey = env.CLOUDINARY_API_KEY;
@@ -69,78 +64,17 @@ async function servePhotos(res: ServerResponse, env: Record<string, string>) {
   }
 }
 
-function parseVimeoMeta(description: string): {
-  caption: string; capability: string; engagementType: string;
-  segment: string; region: string; window: string;
-} {
-  const empty = { caption: "", capability: "", engagementType: "", segment: "", region: "", window: "" };
-  const match = description?.match(/---\s*\n([\s\S]*?)\n---/);
-  if (!match) return empty;
-  const kv: Record<string, string> = {};
-  for (const line of match[1].split("\n")) {
-    const colon = line.indexOf(":");
-    if (colon === -1) continue;
-    const key = line.slice(0, colon).trim();
-    const value = line.slice(colon + 1).trim();
-    if (key && value) kv[key] = value;
-  }
-  return {
-    caption: kv.caption ?? "",
-    capability: kv.capability ?? "",
-    engagementType: kv.engagement_type ?? "",
-    segment: kv.segment ?? "",
-    region: kv.region ?? "",
-    window: kv.window ?? "",
-  };
-}
-
 async function serveVideos(res: ServerResponse, env: Record<string, string>) {
-  const token = env.VIMEO_ACCESS_TOKEN;
-
-  if (!token) {
-    console.error("[gallery-api] VIMEO_ACCESS_TOKEN missing from .env.local");
-    res.writeHead(500, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ error: "Vimeo credentials not configured" }));
-    return;
-  }
-
-  const apiUrl =
-    "https://api.vimeo.com/me/projects/29555979/videos" +
-    "?fields=uri,name,description,duration,pictures.sizes,created_time&per_page=50";
-
-  console.log("[gallery-api] Fetching Vimeo videos…");
+  console.log("[gallery-api] Fetching Mux videos…");
   try {
-    const r = await fetch(apiUrl, { headers: { Authorization: `bearer ${token}` } });
-    if (!r.ok) {
-      const text = await r.text();
-      console.error("[gallery-api] Vimeo error:", r.status, text);
-      res.writeHead(502, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ error: `Vimeo API error ${r.status}` }));
-      return;
-    }
-    const data = await r.json() as { data?: Record<string, unknown>[] };
-    console.log(`[gallery-api] Vimeo returned ${data.data?.length ?? 0} videos`);
-
-    const videos = (data.data ?? []).map((v) => {
-      const videoId = (v.uri as string).replace("/videos/", "");
-      const sizes = (v.pictures as { sizes?: { width: number; link: string }[] } | undefined)?.sizes ?? [];
-      const thumb = sizes.find((s) => s.width >= 1280)?.link ?? sizes[sizes.length - 1]?.link ?? "";
-      const meta = parseVimeoMeta((v.description as string) ?? "");
-      return {
-        id: videoId,
-        title: (v.name as string) ?? "",
-        duration: formatDuration((v.duration as number) ?? 0),
-        thumbnailUrl: thumb,
-        videoUrl: `https://player.vimeo.com/video/${videoId}?autoplay=1&badge=0&autopause=0`,
-        ...meta,
-      };
-    });
+    const videos = await getGalleryVideos(env);
+    console.log(`[gallery-api] Mux returned ${videos.length} playable videos`);
     res.writeHead(200, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ videos }));
   } catch (err) {
-    console.error("[gallery-api] Vimeo fetch failed:", err);
-    res.writeHead(502, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ error: "Failed to reach Vimeo" }));
+    const status = err instanceof MuxError ? err.status : 500;
+    res.writeHead(status, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ error: err instanceof Error ? err.message : "Unexpected error" }));
   }
 }
 

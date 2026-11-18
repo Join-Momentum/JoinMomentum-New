@@ -155,7 +155,7 @@ const GalleryVideos = () => {
         </div>
       </section>
 
-      {/* Filters */}
+      {/* Filters — hidden until Mux assets carry capability/engagement_type metadata.
       <section className="sticky top-16 md:top-20 z-30 bg-background/95 backdrop-blur-sm border-b border-border px-6 md:px-12 py-4">
         <div className="max-w-[1400px] mx-auto">
           <div className="flex flex-wrap gap-2 items-center">
@@ -189,6 +189,7 @@ const GalleryVideos = () => {
           </div>
         </div>
       </section>
+      */}
 
       {/* Grid */}
       <section className="py-12 md:py-16 px-6 md:px-12">
@@ -288,7 +289,7 @@ const GalleryVideos = () => {
         </div>
       </section>
 
-      {/* Video modal — Vimeo iframe */}
+      {/* Video modal — Mux Player iframe */}
       <Dialog open={!!activeVideo} onOpenChange={(open) => !open && setActiveVideo(null)}>
         <DialogContent className="max-w-3xl bg-background border-border p-0 gap-0">
           <DialogTitle className="sr-only">
